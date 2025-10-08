@@ -77,6 +77,7 @@ Setiap pengguna memiliki role yang menentukan hak akses( Admin & Reguler User)
 
 ### Sumber Dataset 
 - [AYO](https://ayo.co.id/main-bareng)
+- [SDI](https://data.go.id/dataset/dataset/data-fasilitas-dan-lapangan-olahraga-terbuka-kota-adm-jakarta-barat)
 
 ### Role User
 - #### User
