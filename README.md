@@ -26,7 +26,3 @@ Platform ini menyediakan wadah bagi pengguna untuk berbagi pengalaman dan tips o
   ini bla bla bla
 - Community Owner
   ini bla bla bla
-
-### Tautan 
-- Deployment
-- Design 
