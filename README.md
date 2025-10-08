@@ -19,10 +19,7 @@ Platform ini menyediakan wadah bagi pengguna untuk berbagi pengalaman dan tips o
 - [AYO](https://ayo.co.id/main-bareng)
 
 ### Role User
-- Regular User
-  ini bla bla 
-  bla
-- Event Organizer
-  ini bla bla bla
-- Community Owner
-  ini bla bla bla
+- #### User
+    User berperan sebagai partisipan utama dalam platform ini. Mereka dapat berbagi pengalaman serta tips seputar olahraga melalui forum, mencari dan mendaftar pada event olahraga yang diminati, serta mengelola profil pribadi mereka. Melalui fitur Rekomendasi Event, user juga dapat memilih kategori olahraga favorit agar sistem menampilkan daftar event yang sesuai minatnya.
+- #### Admin
+    Admin berfungsi sebagai gerbang pengawasan yang menilai setiap pengajuan event sebelum ditayangkan ke publik. Ia memastikan seluruh acara telah memenuhi aspek kelayakan, legalitas, serta kelengkapan konten, sehingga hanya event yang sesuai standar yang dapat dipublikasikan.
