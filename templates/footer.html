@@ -1,0 +1,53 @@
+{% load static %}
+<div class="flex flex-col w-full bg-blue-100 gap-10 px-20 pt-20 pb-10">
+  <div class="flex items-center w-full justify-between">
+    <div class="flex flex-col gap-10 w-64">
+      <h1 class="">gas.in</h1>
+      <p class="text-wrap">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui,
+        perspiciatis? Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+        Ad, officiis.
+      </p>
+      <div id="icon-container" class="flex gap-4 h-8"></div>
+    </div>
+    <div class="flex h-fit gap-12">
+      <a href="">Home</a>
+      <a href="">Event</a>
+      <a href="">Venue</a>
+      <a href="">Forum</a>
+    </div>
+    <div class="flex h-fit">
+      <div class="flex flex-col gap-1">
+        <label for="message" class="px-1 focus:ring-0">Suggestion for gas.in</label>
+        <div class="flex gap-2">
+          <input type="text" id="message" class="rounded-md" />
+          <button type="submit" class="rounded-md bg-blue-300 h-full px-3 py-2">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="w-full">
+    <p class="text-center">© 2025 gas.in. All rights reserved.</p>
+  </div>
+</div>
+<script>
+  const staticBase = "{% static 'image/' %}";
+  const iconContainer = document.getElementById("icon-container");
+  const iconList = [
+    "facebook.png",
+    "twitter.png",
+    "instagram.png",
+    "github.png",
+  ];
+  const imageClass = ["h-auto", "w-auto", "object-cover"];
+
+  for (const icon of iconList) {
+    const imageTag = document.createElement("img");
+    imageTag.src = staticBase + icon;
+    imageTag.alt = icon.split(".")[0];
+    imageTag.classList.add(...imageClass);
+    iconContainer.appendChild(imageTag);
+  }
+</script>
