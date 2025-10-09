@@ -1,0 +1,24 @@
+{% load static %}
+<button id="scrollToTopBtn" class="group fixed hidden z-50 bottom-6 right-6 w-14 h-14 rounded-lg bg-blue-300 p-2.5">
+  <img src="{% static 'image/right-arrow.png' %}" alt="up" class="w-full h-full group-hover:-translate-y-1 transition-all duration-500 -rotate-90">
+</button>
+<script>
+  const scrollBtn = document.getElementById("scrollToTopBtn");
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 100) {
+    scrollBtn.classList.remove("hidden")
+    scrollBtn.style.display = "block";
+  } else {
+    scrollBtn.classList.add("hidden")
+    scrollBtn.style.display = "none";
+  }
+});
+
+scrollBtn.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+});
+</script>

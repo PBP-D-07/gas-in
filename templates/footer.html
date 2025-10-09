@@ -1,26 +1,28 @@
 {% load static %}
-<div class="flex flex-col w-full bg-blue-100 gap-10 px-20 pt-20 pb-10">
-  <div class="flex items-center w-full justify-between">
-    <div class="flex flex-col gap-10 w-64">
+<div
+  class="flex flex-col w-full bg-blue-100 gap-10 max-lg:px-10 max-lg:pt-10 px-20 pt-20 pb-10"
+>
+  <div class="flex max-lg:flex-col max-lg:gap-10 w-full lg:items-center justify-between">
+    <div class="flex flex-col gap-10 w-80 max-lg:w-full">
       <h1 class="">gas.in</h1>
       <p class="text-wrap">
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui,
         perspiciatis? Lorem ipsum dolor sit amet, consectetur adipisicing elit.
         Ad, officiis.
       </p>
-      <div id="icon-container" class="flex gap-4 h-8"></div>
+      <div id="icon-container" class="flex gap-4"></div>
     </div>
-    <div class="flex h-fit gap-12">
+    <div class="flex max-lg:flex-col h-fit max-lg:gap-4 gap-12">
       <a href="">Home</a>
       <a href="">Event</a>
       <a href="">Venue</a>
       <a href="">Forum</a>
     </div>
     <div class="flex h-fit">
-      <div class="flex flex-col gap-1">
-        <label for="message" class="px-1 focus:ring-0">Suggestion for gas.in</label>
+      <div class="flex flex-col gap-1 max-lg:w-full">
+        <label for="message" class="px-1">Suggestion for gas.in</label>
         <div class="flex gap-2">
-          <input type="text" id="message" class="rounded-md" />
+          <input type="text" id="message" class="rounded-md max-lg:w-full" />
           <button type="submit" class="rounded-md bg-blue-300 h-full px-3 py-2">
             Send
           </button>
@@ -41,13 +43,24 @@
     "instagram.png",
     "github.png",
   ];
-  const imageClass = ["h-auto", "w-auto", "object-cover"];
+  const imageClass = ["h-full", "w-full", "object-cover"];
 
   for (const icon of iconList) {
+    const imageButton = document.createElement("a");
+    imageButton.classList.add(
+      "w-10",
+      "h-10",
+      "p-1",
+      "rounded-full",
+      "hover:bg-blue-200",
+      "transition-all"
+    );
+    imageButton.href="";
     const imageTag = document.createElement("img");
     imageTag.src = staticBase + icon;
     imageTag.alt = icon.split(".")[0];
     imageTag.classList.add(...imageClass);
-    iconContainer.appendChild(imageTag);
+    imageButton.appendChild(imageTag);
+    iconContainer.appendChild(imageButton);
   }
 </script>
