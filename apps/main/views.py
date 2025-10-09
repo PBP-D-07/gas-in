@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from main.models import User
+from apps.main.models import User
 
 # Create your views here.
 def show_main(request):
@@ -42,6 +42,6 @@ def register(request):
         'message': 'Account created successfully!',
         'data': {
             'username': user.username,
-            'id': user.id
+            'id': user.id # type: ignore
         }
     }, status=201)

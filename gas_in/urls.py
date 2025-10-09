@@ -18,6 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('main.urls'))
+    path('admin-django/', admin.site.urls),
+    path('', include('apps.main.urls')),
+    path('admin/', include('apps.adminModule.urls')),
+    path('event/', include('apps.eventModule.urls')),
+    path('forum/', include('apps.forumModule.urls')),
+    path('venue/', include('apps.venueModule.urls')),
+    path('event-maker/', include('apps.eventMakerModule.urls')),
+    
 ]

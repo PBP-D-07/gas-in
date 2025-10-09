@@ -1,4 +1,4 @@
-from main.views import show_main, register
+from apps.main.views import show_main, register
 from django.urls import path
 
 app_name = 'main'
