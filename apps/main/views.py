@@ -5,11 +5,13 @@ from django.http import JsonResponse
 from apps.main.models import User
 from django.forms.models import model_to_dict
 import json
-from django.core import serializers
 
 # Create your views here.
 def show_main(request):
     return render(request, 'main.html')
+
+def show_login(request):
+    return render(request, 'login.html')
 
 @csrf_exempt
 def register_user(request):
@@ -17,15 +19,10 @@ def register_user(request):
         return JsonResponse({
             'success': False,
             'message': 'Invalid request method.'}, status=405)
-        
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Invalid JSON format.'}, status=400)
 
-    username = data.get('username', '').strip()
-    password1 = data.get('password1', '').strip()
-    password2 = data.get('password2', '').strip()
+    username = request.POST.get('username', '').strip()
+    password1 = request.POST.get('password1', '').strip()
+    password2 = request.POST.get('password2', '').strip()
 
     if not all([username, password1, password2]):
         return JsonResponse({
@@ -46,13 +43,11 @@ def register_user(request):
         }, status=409)
 
     user = User.objects.create_user(username=username, password=password1)
+    data = model_to_dict(user)
     return JsonResponse({
         'success': True,
         'message': 'Account created successfully!',
-        'data': {
-            'username': user.username,
-            'id': user.id # type: ignore
-        }
+        'data': data
     }, status=201)
 
 @csrf_exempt
@@ -62,13 +57,8 @@ def login_user(request):
             'success': False,
             'message': 'Invalid request method.'}, status=405)
 
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'message': 'Invalid JSON format.'}, status=400)
-
-    username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
+    username = request.POST.get('username', '').strip()
+    password = request.POST.get('password', '').strip()
     
     user = authenticate(request, username=username, password=password)
     if user is not None:

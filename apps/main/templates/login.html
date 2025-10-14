@@ -1,0 +1,83 @@
+{% extends 'base.html' %} {% block content %}
+
+<div
+  class="relative min-h-screen pt-30 flex items-center justify-center w-full"
+>
+  <div class="w-80 p-10 border-2 border-gray-200 rounded-lg">
+    <form id="login-form" method="POST" action="{% url 'main:login' %}">
+      {% csrf_token %}
+      <div class="flex flex-col w-full gap-4">
+        <div>
+          <label
+            for="username"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            required
+            class="w-full border px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-red-200 transition-all"
+            placeholder="Enter your username"
+          />
+        </div>
+
+        <div>
+          <label
+            for="password"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            class="w-full border px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-red-200 transition-all"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-gray-200 px-2 py-1 font-medium rounded-lg hover:brightness-90 transition-all"
+        >
+          Sign In
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  const form = document.getElementById("login-form")
+
+  form.addEventListener("submit", async (e) => {
+  e.preventDefault(); // cegah reload halaman
+
+  const data = new FormData(form);
+
+  try {
+    const response = await fetch("{% url 'main:login' %}", {
+      method: "POST",
+      body: data,
+    });
+
+    const result = await response.json();
+    console.log(result);
+
+    if (result.success) {
+      alert("Login berhasil!");
+      window.location.href = "/";
+    } else {
+      alert("Login gagal: " + result.message);
+    }
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+});
+</script>
+{% endblock content %}
