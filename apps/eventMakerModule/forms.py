@@ -5,7 +5,7 @@ from django.utils.html import strip_tags
 class EventForm(ModelForm):
     class Meta:
         model = Event
-        fields = ["name", "description", "date", "location", "category", "thumbnail", "created_at"]
+        fields = ["name", "description", "date", "location", "category", "thumbnail"]
         
     def clean_name(self):
         name = self.cleaned_data["name"]

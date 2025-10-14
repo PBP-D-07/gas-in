@@ -3,6 +3,9 @@ from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from apps.eventMakerModule.models import Event
 
+def show_create(request):
+    return render(request, "create_event.html")
+
 def create_event(request):
     try:
         name = (request.POST.get("name"))                                                                                                                                                                                                                               
