@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'apps.venueModule'
 ]
 
+AUTH_USER_MODEL = 'main.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
