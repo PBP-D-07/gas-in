@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>{{ product.name }} - KickOff Shop</title>
+{% endblock meta %}
+
+{% block content %}
+
+<div class="flex flex-col items-center pt-20 min-h-screen">
+    <p>Welcome to the venue page!</p>
+    <p>Pick your favorite venue!!!</p>
+    <div class="mt-4">
+        <a href="{% url 'main:show_main' %}" class="text-blue-500 hover:underline">Back to Home</a>
+    </div>
+
+    <div id="grid" class="hidden"></div>
+
+
+</div>
+
+
+{% endblock content %}

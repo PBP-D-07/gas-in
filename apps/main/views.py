@@ -45,3 +45,6 @@ def register(request):
             'id': user.id # type: ignore
         }
     }, status=201)
+
+def venue(request):
+    return render(request, 'venue.html')
