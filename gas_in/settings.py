@@ -155,14 +155,12 @@ MEDIA_URL = '/media/'
 
 if DEBUG:
     STATICFILES_DIRS = [
-        BASE_DIR / 'static' # merujuk ke /static root project pada mode development
+        BASE_DIR / 'static'  
     ]
-    MEDIAFILES_DIRS = [
-        BASE_DIR / 'media' # merujuk ke /static root project pada mode development
-    ]
+    MEDIA_ROOT = BASE_DIR / 'media'  
 else:
-    STATIC_ROOT = BASE_DIR / 'static' # merujuk ke /static root project pada mode production
-    MEDIA_ROOT = BASE_DIR / 'media'
+    STATIC_ROOT = BASE_DIR / 'static'   
+    MEDIA_ROOT = BASE_DIR / 'media'     
 
 
 # Default primary key field type

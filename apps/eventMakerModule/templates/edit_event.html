@@ -6,18 +6,13 @@
 >
   <div class="flex flex-col gap-2">
     <h2 class="text-3xl max-md:text-2xl max-md:text-center font-bold">
-      Create New Event
+      Edit Event
     </h2>
-    <p class="text-gray-500 max-md:text-center">Let's create event yourself</p>
+    <p class="text-gray-500 max-md:text-center">Edit your event information</p>
   </div>
 
   <div class="w-full p-8 rounded-lg border-2 border-gray-500">
-    <form
-      id="event-form"
-      action="{% url 'eventMakerModule:create_event' %}"
-      method="POST"
-      class="w-full"
-    >
+    <form id="event-form" method="POST" class="w-full">
       {% csrf_token %}
       <div class="flex max-lg:flex-col w-full gap-10">
         <div class="flex flex-col gap-3 w-1/2 max-lg:w-full">
@@ -154,7 +149,7 @@
       form="event-form"
       class="rounded-lg bg-gray-100 text-2xl max-md:text-xl font-semibold px-5 py-3 max-md:px-3 max-md:py-2"
     >
-      Create Event
+      Save
     </button>
   </div>
 </div>
@@ -163,27 +158,65 @@
   const thumbnailInput = document.getElementById("thumbnail");
   const thumbnailPreview = document.getElementById("thumbnail-preview");
   const placeholder = document.getElementById("thumbnail-placeholder");
-  const filenameDisplay = document.getElementById("thumbnail-filename");
-  const fileIcon = document.getElementById("file-icon");
+  const eventId = "{{ event_id }}";
 
-  thumbnailInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
+  async function fetchData() {
+    try {
+      const response = await fetch(`/event-maker/${eventId}/`, {
+        method: "GET",
+      });
 
-    if (file) {
-      placeholder.classList.add("hidden");
+      if (!response.ok) {
+        console.error("Failed to fetch event data");
+        return;
+      }
 
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        thumbnailPreview.setAttribute("src", event.target.result);
+      const result = await response.json();
+      const data = result.data;
+
+      if (!data) {
+        console.error("No event data found");
+        return;
+      }
+
+      const rawDate = data.date;
+      const dateObj = new Date(rawDate);
+      const formattedDate = dateObj.toISOString().split("T")[0];
+      
+      document.getElementById("name").value = data.name || "";
+      document.getElementById("description").value = data.description || "";
+      document.getElementById("date").value = formattedDate || "";
+      document.getElementById("location").value = data.location || "";
+      document.getElementById("category").value = data.category || "";
+      if (data.thumbnail) {
+        const thumbnailUrl = `${window.location.origin}${data.thumbnail}`;
+        thumbnailPreview.setAttribute("src", thumbnailUrl);
         thumbnailPreview.classList.remove("hidden");
-      };
-      reader.readAsDataURL(file);
-    } else {
-      placeholder.classList.remove("hidden");
-      thumbnailPreview.setAttribute("src", "");
-      thumbnailPreview.classList.add("hidden");
+        placeholder.classList.add("hidden");
+}
+    } catch (error) {
+      console.error("Error:", error);
     }
-  });
+  }
+
+thumbnailInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+
+  if (file) {
+    placeholder.classList.add("hidden");
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      thumbnailPreview.setAttribute("src", event.target.result);
+      thumbnailPreview.classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);  
+  } else { 
+    placeholder.classList.remove("hidden");
+    thumbnailPreview.setAttribute("src", "");
+    thumbnailPreview.classList.add("hidden");
+  }
+});
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -191,13 +224,10 @@
     const formData = new FormData(form);
 
     try {
-      const response = await fetch(
-        "/event-maker/api/create/",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`/event-maker/api/edit/${eventId}/`, {
+        method: "POST",
+        body: formData,
+      });
 
       const result = await response.json();
       if (result.ok) {
@@ -207,5 +237,7 @@
       console.error("Error:", error);
     }
   });
+
+  document.addEventListener("DOMContentLoaded", fetchData);
 </script>
 {% endblock content %}
