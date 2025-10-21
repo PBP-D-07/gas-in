@@ -43,13 +43,14 @@
         {% if user.is_authenticated %}
         <a
           href=""
+          onclick="logoutUser(event)"
           class="text-red-600 hover:text-red-700 font-medium transition-all"
         >
           Logout
         </a>
         {% else %}
         <a
-          href=""
+          href="{% url 'main:show_login' %}"
           class="text-gray-600 hover:text-gray-900 font-medium transition-all"
         >
           Login
@@ -119,13 +120,14 @@
       <div class="border-t border-gray-200 pt-4">
         <a
           href=""
+          onclick="logoutUser(event)"
           class="block text-red-600 hover:text-red-700 font-medium py-3 transition-all"
         >
           Logout
         </a>
         <div class="space-y-3">
           <a
-            href=""
+            href="{% url 'main:show_login' %}"
             class="block text-gray-600 hover:text-gray-900 font-medium py-3 transition-all"
           >
             Login
@@ -147,5 +149,25 @@
     btn.addEventListener("click", () => {
       menu.classList.toggle("hidden");
     });
+
+    async function logoutUser(e) {
+    e.preventDefault();
+
+    const response = await fetch("{% url 'main:logout' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.status === 200) {
+      alert(data.message);
+      window.location.href = "";
+    } else {
+      alert(data.message);
+    }
+  }
   </script>
 </nav>

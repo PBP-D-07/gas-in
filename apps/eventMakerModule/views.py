@@ -1,4 +1,5 @@
-from django.shortcuts import render 
+from django.shortcuts import render,redirect
+from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.http import JsonResponse
@@ -9,6 +10,9 @@ def show_create(request):
 
 def show_edit(request, id):
     return render(request, "edit_event.html", {"event_id":id})
+
+def show_detail(request, id):
+    return render(request, "event_detail.html", {"event_id":id})
 
 def create_event(request):
     if request.method != 'POST':
@@ -22,6 +26,9 @@ def create_event(request):
         category = request.POST.get("category")
         thumbnail = request.FILES.get("thumbnail")
         owner = request.user
+        
+        if not owner.is_authenticated:
+            return JsonResponse({"message": "You must be logged in to create an event."}, status=401)
 
         new_event = Event.objects.create(
             name=name,
@@ -33,42 +40,71 @@ def create_event(request):
             owner=owner
         )
         
-        data = model_to_dict(new_event)
-
-        data["thumbnail"] = new_event.thumbnail.url if new_event.thumbnail else ""
+        event_dict = model_to_dict(new_event, exclude=['owner'])
+        event_dict['owner'] = {
+            "id": new_event.owner.id, #type: ignore
+            "username": new_event.owner.username, #type: ignore
+        }
+        if new_event.thumbnail:
+            event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail)
         
         return JsonResponse({
-            "message": "Event created successfully",
-            "data": data
-        }, status=201)
+                "message": "Event created successfully",
+                "data": event_dict
+            }, status=201)
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
 def get_all_event(request):
-    events = list(Event.objects.values(
-        'id', 'name', 'description', 'date', 'location', 'category', 'thumbnail', 'owner'
-    ))
-    
+    events = Event.objects.all()
+    data = []
+
     for e in events:
-        if e['thumbnail']:
-            e['thumbnail'] = settings.MEDIA_URL + e['thumbnail']
-    
-    return JsonResponse({'message': 'All event retreived successfully', 'data': events})
+        e_dict = {
+            'id': e.id,
+            'name': e.name,
+            'description': e.description,
+            'date': e.date,
+            'location': e.location,
+            'category': e.category,
+            'category_display': e.get_category_display(),  # type: ignore
+            'thumbnail': settings.MEDIA_URL + str(e.thumbnail) if e.thumbnail else None,
+            'owner': e.owner.id if e.owner else None,
+        }
+        data.append(e_dict)
+
+    return JsonResponse({'message': 'All events retrieved successfully', 'data': data}, status=200)
+
 
 def get_event_by_id(request, id):
     try:
         event = Event.objects.get(pk=id)
     except Event.DoesNotExist:
         return JsonResponse({"message": "Event not found"}, status=404)
-    
-    event_dict = model_to_dict(event)
+
+    event_dict = model_to_dict(event, exclude=['owner', 'participants'])
+    event_dict['category_display'] = event.get_category_display() #type: ignore
+    event_dict['owner'] = {
+        "id": event.owner.id, #type: ignore
+        "username": event.owner.username, #type: ignore
+    }
+    event_dict['participants'] = [
+        {
+            "id": p.id,
+            "username": p.username,
+        }
+        for p in event.participants.all()
+    ]
     if event.thumbnail:
         event_dict['thumbnail'] = settings.MEDIA_URL + str(event.thumbnail)
-    
-    return JsonResponse({"message": "Event retreived successfully", "data":event_dict}, status=200)
+
+    return JsonResponse({"message": "Event retrieved successfully", "data": event_dict}, status=200)
 
 def delete_event(request, id):
+    if request.method != 'POST':
+        return JsonResponse({
+            'message': 'Invalid request method.'}, status=405)
     try:
         event = Event.objects.get(pk=id)
     except Event.DoesNotExist:
@@ -80,7 +116,12 @@ def delete_event(request, id):
     }, status=200)
     
 def join_event(request, id):
+    if request.method != 'POST':
+        return JsonResponse({
+            'message': 'Invalid request method.'}, status=405)
     user = request.user
+    if not user.is_authenticated:
+        return JsonResponse({"message": "You must be logged in to join an event."}, status=401)
     try:
         event = Event.objects.get(pk=id)
     except Event.DoesNotExist:
@@ -90,16 +131,27 @@ def join_event(request, id):
         return JsonResponse({"message": "User already joined"}, status=400)
     
     event.participants.add(user)
+    participants = [
+        {
+            "id": p.id,
+            "username": p.username,
+        }
+        for p in event.participants.all()
+    ]
     
     return JsonResponse({
         "message": f"{request.user.username} joined {event.name}",
         "data": {
             "event_id": str(event.id),
-            "total_participants": event.participants.count()
+            "total_participants": event.participants.count(),
+            "participants": participants
         }
     }, status=200)
     
 def edit_event(request, id): 
+    if request.method != 'POST':
+        return JsonResponse({
+            'message': 'Invalid request method.'}, status=405)
     try:
         event = Event.objects.get(pk=id)
     except Event.DoesNotExist:

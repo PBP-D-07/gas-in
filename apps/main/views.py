@@ -71,6 +71,16 @@ def login_user(request):
     else:
         return JsonResponse({'success': False, 'message': 'Invalid username or password.'})
     
+def logout_user(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            logout(request)   
+            return JsonResponse({"message": "Logout successful"}, status=200)
+        else:
+            return JsonResponse({"message": "You are not logged in"}, status=401)
+    else:
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+
 def get_all_user(request):
     users = list(User.objects.values(
         'id', 'username', 'is_admin', 'created_at'
