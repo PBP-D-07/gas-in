@@ -1,8 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from apps.forumModule.forms import PostForm
 from apps.forumModule.models import Post
-from django.http import HttpResponse
-from django.core import serializers
+from django.http import HttpResponseRedirect, JsonResponse
 
 # Create your views here.
 def show_main(request):
@@ -47,40 +46,3 @@ def edit_post(request, id):
     }
 
     return render(request, "edit_post.html", context)
-
-
-def show_post(request, id):
-    post = get_object_or_404(Post, pk=id)
-    post.increment_views()
-
-    context = {
-        'post': post
-    }
-
-    return render(request, "post_detail.html", context)
-
-def show_xml(request):
-     post_list = Post.objects.all()
-     xml_data = serializers.serialize("xml", post_list)
-     return HttpResponse(xml_data, content_type="application/xml")
-
-def show_xml_by_id(request, post_id):
-   try:
-       post_item = Post.objects.filter(pk=post_id)
-       xml_data = serializers.serialize("xml", post_item)
-       return HttpResponse(xml_data, content_type="application/xml")
-   except Post.DoesNotExist:
-       return HttpResponse(status=404)
-
-def show_json(request):
-    post_list = Post.objects.all()
-    json_data = serializers.serialize("json", post_list)
-    return HttpResponse(json_data, content_type="application/json")
-
-def show_json_by_id(request, post_id):
-   try:
-       post_item = Post.objects.get(pk=post_id)
-       json_data = serializers.serialize("json", [post_item])
-       return HttpResponse(json_data, content_type="application/json")
-   except Post.DoesNotExist:
-       return HttpResponse(status=404)
