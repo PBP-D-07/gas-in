@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<p><a href="{% url 'main:show_main' %}"><button>← Back to Post List</button></a></p>
+
+<h1>{{ post.title }}</h1>
+
+<p>
+  <b>{{ post.get_category_display }}</b>
+  {% if post.is_featured %} | <b>Featured</b>{% endif %}
+  {% if post.is_post_hot %} | <b>Hot</b>{% endif %}
+  | <i>{{ post.created_at|date:"d M Y, H:i" }}</i>
+  | Views: {{ post.views }}
+</p>
+
+<p>{{ post.content }}</p>
+
+{% if post.user %}
+    <p>Author: {{ post.user.username }}</p>
+{% else %}
+    <p>Author: Anonymous</p>
+{% endif %}
+
+{% endblock content %}
