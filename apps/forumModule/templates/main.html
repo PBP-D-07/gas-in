@@ -38,7 +38,10 @@
 
         {% if user.is_authenticated and post.author == user %}
         <a href="{% url 'main:edit_post' post.pk %}">
-        <button>Edit</button>
+            <button>Edit</button>
+        </a>
+        <a href="{% url 'main:delete_post' post.pk %}">
+            <button>Delete</button>
         </a>
         {% endif %}
     </p>
