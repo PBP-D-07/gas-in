@@ -1,0 +1,104 @@
+{% extends 'base.html' %} {% load static %} {% block meta %}
+<title>gas.in | Event Maker</title>
+{% endblock meta %} {% block content %}
+<div
+  class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 max-md:px-8 flex flex-col gap-10"
+>
+  <div class="w-full h-96 max-lg:h-72 max-md:h-60 rounded-lg overflow-hidden">
+    <img
+      id="thumbnail"
+      src="{% static 'image/no-image.jpg' %}"
+      alt="Event Thumbnail"
+      class="w-full h-full object-cover"
+    />
+  </div>
+  <div class="flex max-lg:flex-col w-full gap-10">
+    <div class="flex flex-col gap-4 grow">
+      <h1 id="name" class="font-bold text-3xl">Nama Event</h1>
+      <p id="description" class="text-gray-500 text-sm">
+        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eos, sed.
+        Minus ab nisi laborum enim odit! At dolorum ullam totam?
+      </p>
+    </div>
+    <div class="flex flex-col gap-2 max-w-72 max-lg:w-full p-6 border-2 rounded-xl">
+      <div class="flex gap-2 items-center">
+        <img
+          src="{% static 'image/calendar.png' %}"
+          alt="calendar"
+          class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+        />
+        <p id="date">Senin, 20 Oktober 2025</p>
+      </div>
+      <div class="flex gap-2 items-center">
+        <img
+          src="{% static 'image/location.png' %}"
+          alt="location"
+          class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+        />
+        <p id="location">Gelora Bung Karno, Jakarta</p>
+      </div>
+      <div class="flex gap-2 items-center">
+        <img
+          id="category-icon"
+          src="{% static 'image/category/other.png' %}"
+          alt="category"
+          class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+        />
+        <p id="category">Lari</p>
+      </div>
+    </div>
+  </div>
+  <button
+    onclick="showJoinModal()"
+    class="bg-gray-100 w-fit py-1 px-3 rounded-lg self-center text-xl font-semibold"
+  >
+    Join Now
+  </button>
+</div>
+<script>
+  const eventId = "{{ event_id }}";
+
+  async function fetchData() {
+    try {
+      const response = await fetch(`/event-maker/${eventId}/`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch event data");
+        return;
+      }
+
+      const result = await response.json();
+      const data = result.data;
+
+      if (!data) {
+        console.error("No event data found");
+        return;
+      }
+
+      const rawDate = data.date;
+      const dateObj = new Date(rawDate);
+      const formattedDate = dateObj.toISOString().split("T")[0];
+
+      document.getElementById("name").innerHTML = data.name || "";
+      document.getElementById("description").innerHTML = data.description || "";
+      document.getElementById("date").innerHTML = formattedDate || "";
+      document.getElementById("location").innerHTML = data.location || "";
+      document.getElementById("category").innerHTML =
+        data.category_display || "";
+      document
+        .getElementById("category-icon")
+        .setAttribute("src", `/static/image/category/${data.category}.png`);
+      if (data.thumbnail) {
+        const thumbnailUrl = `${window.location.origin}${data.thumbnail}`;
+        document.getElementById("thumbnail").setAttribute("src", thumbnailUrl);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", fetchData);
+</script>
+{% include 'join_modal.html' %} {% endblock content %}

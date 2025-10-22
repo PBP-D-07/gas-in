@@ -27,7 +27,9 @@
     <div id="error" class="hidden"></div>
 
     <!-- Product Grid -->
-    <div id="grid" class="hidden"></div>
+  <div id="venue-count" class="text-sm text-gray-700 mt-4"></div>
+  <pre id="venue-debug-list" class="mt-2 text-xs text-gray-800 bg-gray-50 p-2 rounded max-w-3xl whitespace-pre-wrap"></pre>
+  <div id="grid" class="hidden"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
@@ -45,84 +47,159 @@ const eventGridContainer = document.getElementById('grid');
 let allVenuesData = [];
 
 // Show/hide page sections
-function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+function displayPageSection({ showLoading = false, showError = false, showGrid = false, emptyMessage = '' }) {
   loadingSpinner.classList.toggle('hidden', !showLoading);
   errorMessage.classList.toggle('hidden', !showError);
   eventGridContainer.classList.toggle('hidden', !showGrid);
-  
-  // Add grid classes when showing grid
+
   if (showGrid) {
     eventGridContainer.className = 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4';
   }
+
+  if (showError && emptyMessage) {
+    errorMessage.innerHTML = `<div class="bg-red-50 border border-red-100 text-red-700 p-4 rounded">${DOMPurify.sanitize(emptyMessage)}</div>`;
+  }
 }
 
-// Get readable category name
-{% comment %} function getReadableCategoryName(categoryCode) {
-  const categoryMapping = {
-    'apparel': 'Apparel',
-    'footwear': 'Footwear',
-    'accessories': 'Accessories',
-    'equipment': 'Equipment',
-    'merchandise': 'Merchandise',
+// Map category codes to readable names (from models)
+function getReadableCategoryName(categoryCode) {
+  const mapping = {
+    'concert': 'Concert',
+    'sports': 'Sports',
+    'theater': 'Theater',
+    'conference': 'Conference',
+    'exhibition': 'Exhibition',
+    'other': 'Other',
   };
-  return categoryMapping[categoryCode] || categoryCode;
-} {% endcomment %}
+  return mapping[categoryCode] || categoryCode || 'Other';
+}
 
-// Create product card element
-{% comment %} function buildProductCardElement(item) {
-    const article = document.createElement('article');
-    article.className = 'bg-white rounded-lg border-2 border-gray-300 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
+// Build a Venue card element
+function buildVenueCardElement(item) {
+  const article = document.createElement('article');
+  article.className = 'bg-white rounded-lg border-2 border-gray-300 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
 
-    const linkDetail = `{% url 'main:show_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
-    const linkEdit = `{% url 'main:edit_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
-    const linkDelete = `{% url 'main:delete_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
+  // Use the venue detail URL pattern and replace a placeholder UUID
+  const linkDetail = `{% url 'venue:venue_detail' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
 
-    const name = DOMPurify.sanitize(item.name || '');
-    const description = DOMPurify.sanitize(item.description || '');
-    const category = DOMPurify.sanitize(item.category || '');
-    const thumbnail = DOMPurify.sanitize(item.thumbnail || '');
-    const price = DOMPurify.sanitize(item.price || 0);
-    const stock = DOMPurify.sanitize(item.stock || 0);
-    const isFeatured = item.is_featured;
-        const thumbnailHtml = DOMPurify.sanitize(
-        item.thumbnail ? `<img src='${thumbnail}' alt='${name}' class='w-full h-full object-cover'>` : `<div class='w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center'></div>`
-    );
-    const categoryLabel = getReadableCategoryName(category);
-    const featuredLabel = isFeatured ? `<span class='inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800'>Featured</span>` : '';
+  const name = DOMPurify.sanitize(item.name || '');
+  const description = DOMPurify.sanitize(item.description || '');
+  const location = DOMPurify.sanitize(item.location || '');
+  const category = DOMPurify.sanitize(item.category || 'other');
+  const thumbnail = DOMPurify.sanitize(item.thumbnail || '');
+  const createdAt = item.created_at ? new Date(item.created_at) : null;
+  const createdLabel = createdAt ? DOMPurify.sanitize(createdAt.toLocaleString('id-ID')) : '';
+  const isAccepted = item.is_accepted;
+  const ownerId = item.owner_id ? String(item.owner_id) : '';
 
-    const editDeleteHtml = CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(item.user_id)
-        ? `<div class='flex space-x-2'>
-            <button onclick='editProductAjax("${item.id}")' class='text-gray-600 hover:text-gray-700 text-sm transition-colors'>Edit</button>
-            <button onclick='confirmDeleteProduct("${item.id}", "${name}")' class='text-red-600 hover:text-red-700 text-sm transition-colors'>Delete</button>
-          </div>`
-        : '';
+  const thumbnailHtml = DOMPurify.sanitize(
+    item.thumbnail ? `<img src='${thumbnail}' alt='${name}' class='w-full h-full object-cover'>` : `<div class='w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center'><span class='text-gray-500'>No image</span></div>`
+  );
 
-    const cardHtml = `
-          <div class="aspect-square relative overflow-hidden">
-            <a href="${linkDetail}" class="block w-full h-full hover:opacity-90 transition-opacity">
-              ${thumbnailHtml}
-            </a>
-          </div>
-        <div class="p-4 flex flex-col flex-1">
-          <div class="flex items-center gap-2 mb-3">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-600 text-white">${categoryLabel}</span>
-            ${featuredLabel}
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
-            <a href="${linkDetail}" class="hover:text-blue-600 transition-colors text-3xl">${name}</a>
-          </h3>
-          <div class="flex items-center mb-3 flex-grow">
-            <span class="text-2xl font-bold text-green-600 py-1">Rp ${parseFloat(price || 0).toLocaleString('id-ID')}</span>
-          </div>
-          <div class="pt-4 border-t border-gray-200 flex items-center justify-between mt-auto">
-            <a href="${linkDetail}" class="text-blue-600 hover:text-green-700 font-medium text-sm transition-colors">View</a>
-            ${editDeleteHtml}
-          </div>
-        </div>
-    `;
-    
-    article.innerHTML = cardHtml;
-    return article;
-} {% endcomment %}
+  const categoryLabel = getReadableCategoryName(category);
+  const acceptedLabel = isAccepted ? `<span class='inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800'>Accepted</span>` : `<span class='inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800'>Pending</span>`;
+
+  const ownerActions = (CURRENT_USER_ID && ownerId && CURRENT_USER_ID === ownerId)
+    ? `<div class='flex space-x-2'>
+         <button onclick="editVenue('${item.id}')" class='text-gray-600 hover:text-gray-700 text-sm'>Edit</button>
+         <button onclick="confirmDeleteVenue('${item.id}', '${name.replace(/'/g, "\\'") }')" class='text-red-600 hover:text-red-700 text-sm'>Delete</button>
+       </div>`
+    : '';
+
+  const cardHtml = `
+    <div class="aspect-square relative overflow-hidden">
+      <a href="${linkDetail}" class="block w-full h-full hover:opacity-90 transition-opacity">
+        ${thumbnailHtml}
+      </a>
+    </div>
+    <div class="p-4 flex flex-col flex-1">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-600 text-white">${categoryLabel}</span>
+        ${acceptedLabel}
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+        <a href="${linkDetail}" class="hover:text-blue-600 transition-colors text-3xl">${name}</a>
+      </h3>
+      <p class="text-sm text-gray-600 mb-3 line-clamp-3">${description}</p>
+      <div class="text-sm text-gray-500 mb-3">Location: ${location}</div>
+      <div class="text-xs text-gray-400 mb-3">Created: ${createdLabel}</div>
+      <div class="pt-4 border-t border-gray-200 flex items-center justify-between mt-auto">
+        <a href="${linkDetail}" class="text-blue-600 hover:text-green-700 font-medium text-sm transition-colors">View</a>
+        ${ownerActions}
+      </div>
+    </div>
+  `;
+
+  article.innerHTML = cardHtml;
+  return article;
+}
+
+// Render grid with data
+function renderGrid(data) {
+  eventGridContainer.innerHTML = '';
+  if (!data || data.length === 0) {
+    displayPageSection({ showLoading: false, showError: true, showGrid: false, emptyMessage: 'No venues found.' });
+    return;
+  }
+  console.log('[venue] renderGrid: rendering', data.length, 'items');
+  // show count for quick visibility
+  const venueCountEl = document.getElementById('venue-count');
+  if (venueCountEl) venueCountEl.textContent = `Found ${data.length} venues`;
+
+  data.forEach(item => {
+    try {
+      const el = buildVenueCardElement(item);
+      eventGridContainer.appendChild(el);
+    } catch (e) {
+      console.error('[venue] renderGrid: error building card for item', item, e);
+    }
+  });
+  // populate debug list (plain text) so we can see data regardless of card layout
+  try {
+    const dbg = document.getElementById('venue-debug-list');
+    if (dbg) {
+      const names = data.slice(0, 20).map((it, idx) => `${idx+1}. ${it.name || '[no name]'} (${it.id})`).join('\n');
+      dbg.innerText = `First ${Math.min(20, data.length)} venues:\n` + names;
+    }
+  } catch (e) {
+    console.error('[venue] renderGrid: failed to populate debug list', e);
+  }
+  // Ensure grid is visible
+  displayPageSection({ showLoading: false, showError: false, showGrid: true });
+  eventGridContainer.classList.remove('hidden');
+}
+
+// Fetch venues from API
+async function fetchVenues() {
+  try {
+    console.log('[venue] fetchVenues: fetching', VENUE_API_ENDPOINT);
+    displayPageSection({ showLoading: true, showError: false, showGrid: false });
+    const resp = await fetch(VENUE_API_ENDPOINT, { credentials: 'same-origin' });
+    if (!resp.ok) throw new Error('Server returned ' + resp.status);
+    const data = await resp.json();
+    console.log('[venue] fetchVenues: received', Array.isArray(data) ? data.length : 'non-array', 'items');
+    allVenuesData = data;
+    renderGrid(allVenuesData);
+  } catch (err) {
+    console.error('Failed to load venues', err);
+    displayPageSection({ showLoading: false, showError: true, showGrid: false, emptyMessage: 'Failed to load venues.' });
+  }
+}
+
+// Small stubs for edit/delete actions if user wants to implement later
+function editVenue(id) {
+  // placeholder: open edit page or show modal
+  window.location.href = `{% url 'venue:venue_detail' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', id) + 'edit/';
+}
+
+function confirmDeleteVenue(id, name) {
+  if (!confirm(`Delete venue "${name}"?`)) return;
+  // send DELETE via fetch to app endpoint (not implemented)
+  alert('Delete not implemented in this demo.');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchVenues();
+});
 
 {% endblock content %}

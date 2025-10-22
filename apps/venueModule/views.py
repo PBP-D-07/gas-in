@@ -15,10 +15,22 @@ from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
 
 def show_venue(request):
-    return render(request, 'venue.html')
+    venue_list = Venue.objects.all()
+
+    context = {
+        'venue_list': venue_list
+    }
+
+    return render(request, 'venue.html', context)
 
 def venue_detail(request, venue_id):
-    return render(request, 'venue_detail.html', {'venue_id': venue_id})
+    venue = get_object_or_404(Venue, pk=venue_id)
+
+    context = {
+        'venue': venue
+    }
+
+    return render(request, "venue_detail.html", context)
 
 @require_POST
 def add_venue_entry_ajax(request):
