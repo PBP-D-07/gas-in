@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'apps.eventMakerModule',
     'apps.eventModule',
     'apps.forumModule',
-    'apps.venueModule'
+    'apps.venueModule',
+    'django_extensions'
 ]
 
 AUTH_USER_MODEL = 'main.User'
