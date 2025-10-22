@@ -73,7 +73,7 @@ def login_user(request):
         return response
     else:
         return JsonResponse({'success': False, 'message': 'Invalid username or password.'})
-    
+
 def logout_user(request):
     if request.method == "POST":
         if request.user.is_authenticated:
