@@ -28,7 +28,7 @@ def create_event(request):
         owner = request.user
         
         if not owner.is_authenticated:
-            return JsonResponse({"message": "You must be logged in to create an event."}, status=401)
+            return JsonResponse({"message": "You must be logged in to create an event"}, status=401)
 
         new_event = Event.objects.create(
             name=name,
@@ -118,7 +118,8 @@ def delete_event(request, id):
 def join_event(request, id):
     if request.method != 'POST':
         return JsonResponse({
-            'message': 'Invalid request method.'}, status=405)
+            'message': 'Invalid request method'}, status=405)
+
     user = request.user
     if not user.is_authenticated:
         return JsonResponse({"message": "You must be logged in to join an event."}, status=401)
@@ -151,7 +152,7 @@ def join_event(request, id):
 def edit_event(request, id): 
     if request.method != 'POST':
         return JsonResponse({
-            'message': 'Invalid request method.'}, status=405)
+            'message': 'Invalid request method'}, status=405)
     try:
         event = Event.objects.get(pk=id)
     except Event.DoesNotExist:

@@ -4,11 +4,11 @@
 <div
   class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10"
 >
-  <div class="flex flex-col gap-2">
-    <h2 class="text-3xl max-md:text-2xl max-md:text-center font-bold">
+  <div class="flex flex-col gap-3">
+    <h2 class="text-5xl max-lg:text-3xl max-md:text-2xl max-lg:text-center font-bold">
       Create New Event
     </h2>
-    <p class="text-gray-500 max-md:text-center">Let's create event yourself</p>
+    <p class="text-gray-500 text-xl max-lg:text-lg max-lg:text-center">Let's create your own event!</p>
   </div>
 
   <div class="w-full p-8 rounded-lg border-2 border-gray-500">
@@ -86,12 +86,13 @@
               <option value="running">Lari</option>
               <option value="badminton">Badminton</option>
               <option value="football">Sepak Bola</option>
+              <option value="futsal">Futsal</option>
               <option value="basketball">Basket</option>
               <option value="cycling">Sepeda</option>
               <option value="volleyball">Voli</option>
               <option value="yoga">Yoga</option>
               <option value="padel">Padel</option>
-              <option value="other">Lainnya</option>
+              <option value="other" selected>Lainnya</option>
             </select>
           </div>
         </div>
@@ -133,7 +134,7 @@
                 src=""
                 alt="preview"
                 class="hidden absolute w-full h-full object-cover"
-              ></img>
+              />
             </label>
 
             <input
@@ -152,7 +153,7 @@
     <button
       type="submit"
       form="event-form"
-      class="rounded-lg bg-gray-100 text-2xl max-md:text-xl font-semibold px-5 py-3 max-md:px-3 max-md:py-2"
+      class="rounded-lg bg-blue-400 text-white hover:bg-blue-500 transition-all text-2xl max-md:text-xl font-semibold px-5 py-3 max-md:px-3 max-md:py-2"
     >
       Create Event
     </button>
@@ -172,7 +173,7 @@
 
     if (file) {
       placeholder.classList.add("hidden");
-      thumbnailLabel.classList.remove("border-dashed")
+      thumbnailLabel.classList.remove("border-dashed");
 
       const reader = new FileReader();
       reader.onload = function (event) {
@@ -182,7 +183,7 @@
       reader.readAsDataURL(file);
     } else {
       placeholder.classList.remove("hidden");
-      thumbnailLabel.classList.add("border-dashed")
+      thumbnailLabel.classList.add("border-dashed");
       thumbnailPreview.setAttribute("src", "");
       thumbnailPreview.classList.add("hidden");
     }
@@ -194,18 +195,22 @@
     const formData = new FormData(form);
 
     try {
-      const response = await fetch(
-        "/event-maker/api/create/",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch("/event-maker/api/create/", {
+        method: "POST",
+        body: formData,
+      });
 
       const result = await response.json();
-      if (result.ok) {
-        window.location.href = "";
+
+      if (!response.ok) {
+        showToast(result.message, "", "error");
+        return;
       }
+
+      showToast(result.message, "", "success");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
     } catch (error) {
       console.error("Error:", error);
     }

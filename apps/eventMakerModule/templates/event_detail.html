@@ -12,51 +12,101 @@
       class="w-full h-full object-cover"
     />
   </div>
-  <div class="flex max-lg:flex-col w-full gap-10">
+  <div class="flex max-md:flex-col w-full gap-10">
     <div class="flex flex-col gap-4 grow">
-      <h1 id="name" class="font-bold text-3xl">Nama Event</h1>
-      <p id="description" class="text-gray-500 text-sm">
+      <h1 id="name" class="font-bold text-5xl max-lg:text-3xl">Nama Event</h1>
+      <p id="description" class="text-gray-500 text-xl max-lg:text-lg">
         Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eos, sed.
         Minus ab nisi laborum enim odit! At dolorum ullam totam?
       </p>
     </div>
-    <div class="flex flex-col gap-2 max-w-72 max-lg:w-full p-6 border-2 rounded-xl">
-      <div class="flex gap-2 items-center">
-        <img
-          src="{% static 'image/calendar.png' %}"
-          alt="calendar"
-          class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
-        />
-        <p id="date">Senin, 20 Oktober 2025</p>
+    <div class="flex flex-col gap-3 lg:min-w-64 max-w-72">
+      <div class="flex flex-col gap-2 w-full p-6 border-2 rounded-xl">
+        <div class="flex gap-2 items-center">
+          <img
+            src="{% static 'image/calendar.png' %}"
+            alt="calendar"
+            class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+          />
+          <p id="date">Jumat, 24 Oktober 2025</p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <img
+            src="{% static 'image/location.png' %}"
+            alt="location"
+            class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+          />
+          <p id="location">Jakarta</p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <img
+            id="category-icon"
+            src="{% static 'image/category/other.png' %}"
+            alt="category"
+            class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+          />
+          <p id="category">Lainnya</p>
+        </div>
       </div>
-      <div class="flex gap-2 items-center">
-        <img
-          src="{% static 'image/location.png' %}"
-          alt="location"
-          class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
-        />
-        <p id="location">Gelora Bung Karno, Jakarta</p>
-      </div>
-      <div class="flex gap-2 items-center">
-        <img
-          id="category-icon"
-          src="{% static 'image/category/other.png' %}"
-          alt="category"
-          class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
-        />
-        <p id="category">Lari</p>
+      <div class="flex gap-2">
+        <button
+          id="delete-btn"
+          onclick="showDeleteModal()"
+          class="hidden flex gap-2 items-center bg-red-400 hover:bg-red-500 w-fit px-4 py-2 max-md:px-3 max-md:py-2 rounded-lg self-center text-md max-md:text-sm transition-all text-white"
+        >
+          <img
+            src="{% static 'image/delete.png' %}"
+            alt="delete-icon"
+            class="w-auto h-4"
+          />
+          <span> Delete </span>
+        </button>
+        <button
+          id="edit-btn"
+          onclick="editEvent()"
+          class="hidden flex gap-2 items-center bg-yellow-400 hover:bg-yellow-500 w-fit px-4 py-2 max-md:px-3 max-md:py-2 rounded-lg self-center text-md max-md:text-sm transition-all text-white"
+        >
+          <img
+            src="{% static 'image/edit.png' %}"
+            alt="edit-icon"
+            class="w-auto h-4"
+          />
+          <span> Edit </span>
+        </button>
       </div>
     </div>
   </div>
-  <button
-    onclick="showJoinModal()"
-    class="bg-gray-100 w-fit py-1 px-3 rounded-lg self-center text-xl font-semibold"
-  >
-    Join Now
-  </button>
+  <div class="flex w-full gap-6 justify-center">
+    <button
+      id="join-btn"
+      onclick="showJoinModal()"
+      class="hidden bg-blue-400 hover:bg-blue-500 transition-all w-fit px-4 py-2 max-md:px-3 max-md:py-2 rounded-lg self-center text-xl max-md:text-sm font-semibold text-white"
+    >
+      Join Now
+    </button>
+  </div>
 </div>
+{% if user.is_authenticated %}
+<script id="user-data" type="application/json">
+  {
+    "id": "{{ user.id }}",
+    "username": "{{ user.username }}",
+    "is_admin": {{ user.is_admin|yesno:"true,false" }},
+    "is_authenticated": true
+  }
+</script>
+{% else %}
+<script id="user-data" type="application/json">
+  { "is_authenticated": false }
+</script>
+{% endif %}
 <script>
   const eventId = "{{ event_id }}";
+  const user = JSON.parse(document.getElementById("user-data").textContent);
+
+  async function editEvent() {
+    window.location.href = `/event-maker/edit/${eventId}/`;
+  }
 
   async function fetchData() {
     try {
@@ -64,22 +114,27 @@
         method: "GET",
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        console.error("Failed to fetch event data");
+        showToast(result.message, "", "error");
         return;
       }
 
-      const result = await response.json();
       const data = result.data;
 
       if (!data) {
-        console.error("No event data found");
+        showToast("No event data found", "", "error");
         return;
       }
 
       const rawDate = data.date;
-      const dateObj = new Date(rawDate);
-      const formattedDate = dateObj.toISOString().split("T")[0];
+      const dateObj = new Date("2025-07-13");
+      const formattedDate = new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(dateObj);
 
       document.getElementById("name").innerHTML = data.name || "";
       document.getElementById("description").innerHTML = data.description || "";
@@ -94,6 +149,16 @@
         const thumbnailUrl = `${window.location.origin}${data.thumbnail}`;
         document.getElementById("thumbnail").setAttribute("src", thumbnailUrl);
       }
+
+      document.getElementById("join-btn").classList.remove("hidden");
+
+      if (user.is_authenticated) {
+        if (user.is_admin || user.id === data.owner.id) {
+          document.getElementById("join-btn").classList.add("hidden");
+          document.getElementById("delete-btn").classList.remove("hidden");
+          document.getElementById("edit-btn").classList.remove("hidden");
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -101,4 +166,6 @@
 
   document.addEventListener("DOMContentLoaded", fetchData);
 </script>
-{% include 'join_modal.html' %} {% endblock content %}
+{% include 'join_modal.html' %} 
+{% include 'delete_modal.html' %}
+{% endblock content %}
