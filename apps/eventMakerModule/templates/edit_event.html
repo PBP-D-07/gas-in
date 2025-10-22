@@ -156,6 +156,7 @@
 <script>
   const form = document.getElementById("event-form");
   const thumbnailInput = document.getElementById("thumbnail");
+  const thumbnailLabel = document.getElementById("thumbnail-label");
   const thumbnailPreview = document.getElementById("thumbnail-preview");
   const placeholder = document.getElementById("thumbnail-placeholder");
   const eventId = "{{ event_id }}";
@@ -204,6 +205,7 @@ thumbnailInput.addEventListener("change", (e) => {
 
   if (file) {
     placeholder.classList.add("hidden");
+    thumbnailLabel.classList.remove("border-dashed")
 
     const reader = new FileReader();
     reader.onload = function (event) {
@@ -213,6 +215,7 @@ thumbnailInput.addEventListener("change", (e) => {
     reader.readAsDataURL(file);  
   } else { 
     placeholder.classList.remove("hidden");
+    thumbnailLabel.classList.add("border-dashed")
     thumbnailPreview.setAttribute("src", "");
     thumbnailPreview.classList.add("hidden");
   }

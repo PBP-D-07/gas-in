@@ -40,13 +40,13 @@ def create_event(request):
             owner=owner
         )
         
-        event_dict = model_to_dict(new_event, exclude=['owner'])
+        event_dict = model_to_dict(new_event, exclude=['owner', 'thumbnail'])
+        event_dict['id'] = str(new_event.id)
         event_dict['owner'] = {
             "id": new_event.owner.id, #type: ignore
             "username": new_event.owner.username, #type: ignore
         }
-        if new_event.thumbnail:
-            event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail)
+        event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail) if new_event.thumbnail else None
         
         return JsonResponse({
                 "message": "Event created successfully",
@@ -83,7 +83,8 @@ def get_event_by_id(request, id):
     except Event.DoesNotExist:
         return JsonResponse({"message": "Event not found"}, status=404)
 
-    event_dict = model_to_dict(event, exclude=['owner', 'participants'])
+    event_dict = model_to_dict(event, exclude=['owner', 'participants', 'thumbnail'])
+    event_dict['id'] = str(event.id)
     event_dict['category_display'] = event.get_category_display() #type: ignore
     event_dict['owner'] = {
         "id": event.owner.id, #type: ignore
@@ -96,8 +97,7 @@ def get_event_by_id(request, id):
         }
         for p in event.participants.all()
     ]
-    if event.thumbnail:
-        event_dict['thumbnail'] = settings.MEDIA_URL + str(event.thumbnail)
+    event_dict['thumbnail'] = settings.MEDIA_URL + str(event.thumbnail) if event.thumbnail else None
 
     return JsonResponse({"message": "Event retrieved successfully", "data": event_dict}, status=200)
 
