@@ -4,8 +4,8 @@
   class="relative min-h-screen pt-30 flex items-center justify-center w-full "
 >
   <div class="w-80 p-10 shadow-xl border-gray-200 rounded-2xl">
-    <h1 class="pb-4 text-xl text-center font-bold">Login</h1>
-    <form id="login-form" method="POST" action="{% url 'main:login' %}">
+    <h1 class="pb-4 text-xl text-center font-bold">Register</h1>
+    <form id="register-form" method="POST" action="{% url 'main:register' %}">
       {% csrf_token %}
       <div class="flex flex-col w-full gap-4">
         <div>
@@ -78,7 +78,7 @@
   </div>
 </div>
 <script>
-  const form = document.getElementById("login-form");
+  const form = document.getElementById("register-form");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -86,7 +86,7 @@
     const data = new FormData(form);
 
     try {
-      const response = await fetch("/api/login/", {
+      const response = await fetch("/api/register/", {
         method: "POST",
         body: data,
       });

@@ -167,6 +167,7 @@
 
       if (!response.ok) {
         showToast(data.message, "", "error");
+        return;
       }
 
       showToast(data.message, "", "success");
