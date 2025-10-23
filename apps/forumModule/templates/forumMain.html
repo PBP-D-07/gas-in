@@ -43,13 +43,13 @@
         
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select name="category" class="w-full border rounded-lg px-3 py-2" required>
-            <option value="update">Update</option>
-            <option value="transfer">Transfer</option>
-            <option value="exclusive">Exclusive</option>
-            <option value="match">Match</option>
-            <option value="rumor">Rumor</option>
-            <option value="analysis">Analysis</option>
+          <select name="category" id="edit-category" class="w-full border rounded-lg px-3 py-2" required>
+            <option value="running">Running</option>
+            <option value="workout">Workout</option>
+            <option value="nutrition">Nutrition</option>
+            <option value="event">Event</option>
+            <option value="recovery">Recovery</option>
+            <option value="motivation">Motivation</option>
           </select>
         </div>
 
@@ -73,51 +73,70 @@
   </div>
 
   <!-- Modal Edit Post -->
-<div id="editPostModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-  <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
-    <button id="closeEditPostModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">✕</button>
-    <h2 class="text-xl font-semibold mb-4">Edit Post</h2>
+  <div id="editPostModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+      <button id="closeEditPostModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">✕</button>
+      <h2 class="text-xl font-semibold mb-4">Edit Post</h2>
 
-    <form id="editPostForm" method="POST">
-      {% csrf_token %}
-      <input type="hidden" name="post_id" id="edit-post-id">
+      <form id="editPostForm" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="post_id" id="edit-post-id">
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-        <select name="category" id="edit-category" class="w-full border rounded-lg px-3 py-2" required>
-          <option value="update">Update</option>
-          <option value="transfer">Transfer</option>
-          <option value="exclusive">Exclusive</option>
-          <option value="match">Match</option>
-          <option value="rumor">Rumor</option>
-          <option value="analysis">Analysis</option>
-        </select>
-      </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select name="category" class="w-full border rounded-lg px-3 py-2" required>
+            <option value="running">Running</option>
+            <option value="workout">Workout</option>
+            <option value="nutrition">Nutrition</option>
+            <option value="event">Event</option>
+            <option value="recovery">Recovery</option>
+            <option value="motivation">Motivation</option>
+          </select>
+        </div>        
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-        <textarea name="description" id="edit-description" class="w-full border rounded-lg px-3 py-2 h-32" required></textarea>
-      </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea name="description" id="edit-description" class="w-full border rounded-lg px-3 py-2 h-32" required></textarea>
+        </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL (optional)</label>
-        <input type="url" name="thumbnail" id="edit-thumbnail" class="w-full border rounded-lg px-3 py-2" placeholder="https://example.com/image.jpg">
-      </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL (optional)</label>
+          <input type="url" name="thumbnail" id="edit-thumbnail" class="w-full border rounded-lg px-3 py-2" placeholder="https://example.com/image.jpg">
+        </div>
 
-      <div class="flex justify-end gap-2">
-        <button type="button" id="cancelEditPost" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">Save Changes</button>
-      </div>
-    </form>
+        <div class="flex justify-end gap-2">
+          <button type="button" id="cancelEditPost" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">Save Changes</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
-  <hr class="border-gray-300">
+    <hr class="border-gray-300">
 
-  <div id="posts-container" class="flex flex-col gap-6">
-    <p class="text-center text-gray-500">Loading posts...</p>
+    <div id="posts-container" class="flex flex-col gap-6">
+      <p class="text-center text-gray-500">Loading posts...</p>
+    </div>
   </div>
-</div>
+
+  <!-- Modal Comments -->
+  <div id="commentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+      <button id="closeCommentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">✕</button>
+      <h2 class="text-xl font-semibold mb-4">Comments</h2>
+      <div id="commentsList" class="flex flex-col gap-3 mb-4 max-h-64 overflow-y-auto border rounded-md p-3 bg-gray-50"></div>
+      {% if user.is_authenticated %}
+      <form id="commentForm">
+        {% csrf_token %}
+        <input type="hidden" id="commentPostId">
+        <textarea id="commentContent" rows="3" class="w-full border rounded-lg px-3 py-2 mb-2" placeholder="Write a comment..." required></textarea>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Send</button>
+      </form>
+      {% else %}
+        <p class="text-gray-500 text-center">Login to write a comment.</p>
+      {% endif %}
+    </div>
+  </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -207,71 +226,50 @@
         postElement.className = "flex items-start gap-4 p-5 border-2 border-gray-200 rounded-lg hover:shadow-md transition";
 
         const categoryColors = {
-          'transfer': 'bg-blue-500',
-          'update': 'bg-green-500',
-          'exclusive': 'bg-purple-500',
-          'match': 'bg-red-500',
-          'rumor': 'bg-yellow-500',
-          'analysis': 'bg-indigo-500'
+          'running': 'bg-orange-500',      
+          'workout': 'bg-red-500',         
+          'nutrition': 'bg-green-500',   
+          'event': 'bg-blue-500',      
+          'recovery': 'bg-teal-500',   
+          'motivation': 'bg-purple-500'    
         };
         const badgeColor = categoryColors[post.category] || 'bg-gray-500';
 
         postElement.innerHTML = `
-            <div class="flex gap-4 items-start">
-              ${post.thumbnail ? `
-                <img src="${post.thumbnail}" 
-                  alt="Post thumbnail" 
-                  class="w-40 h-40 object-cover rounded-xl border border-gray-300 flex-shrink-0" 
-                  onerror="this.style.display='none'">
-              ` : ''}
-
-              <div class="flex-1 flex flex-col justify-between">
-                <div>
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="${badgeColor} text-white text-xs px-3 py-1 rounded-full font-semibold uppercase">
-                      ${post.category}
-                    </span>
-                    ${post.is_hot ? '<span class="text-red-500 font-bold text-lg">🔥 Hot</span>' : ''}
-                  </div>
-
-                  <p class="text-gray-800 mb-2 font-medium">
-                    ${post.description || "No description"}
-                  </p>
-                </div>
-
-                <p class="text-sm text-gray-500 mb-3">
-                  <span class="font-semibold">${post.owner_username || "Unknown"}</span> • 
-                  ${new Date(post.created_at).toLocaleDateString('id-ID', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })} • 
-                  ${post.post_views} views
-                </p>
-
-                <div class="flex gap-2">
-                  <a href="/forum/${post.id}/">
-                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded-lg hover:bg-blue-600 transition text-sm">
-                      Read More
-                    </button>
-                  </a>
-                  ${String(post.owner_id) === String(userId) ? `
-                    <button onclick="openEditModal('${post.id}')" 
-                      class="bg-yellow-500 text-white px-4 py-1.5 rounded-lg hover:bg-yellow-600 transition text-sm">
-                      Edit
-                    </button>
-                    <button onclick="deletePost('${post.id}')" 
-                      class="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition text-sm">
-                      Delete
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
+          <div class="post-avatar">
+            <img src="/static/image/profile.png" alt="Avatar" class="w-full h-full rounded-full object-cover">
+          </div>
+          <div class="flex-1">
+            <div class="post-header">
+              <span class="username">${post.owner_username || "Unknown"}</span>
+              <span class="time">• ${new Date(post.created_at).toLocaleDateString('id-ID', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</span>
             </div>
-          `;
+            
+            <p class="post-description">${post.description || "No description"}</p>
+            
+            ${post.thumbnail ? `<img src="${post.thumbnail}" alt="Post thumbnail" class="post-thumbnail" onerror="this.style.display='none'">` : ""}
 
+            <div class="post-actions">
+              <button onclick="toggleLike('${post.id}')" id="like-btn-${post.id}">
+                ❤️ ${post.like_count || 0}
+              </button>
+              <button onclick="openCommentModal('${post.id}')">💬 Comments</button>
+              <a href="/forum/${post.id}/">
+                <button>🔗 Read More</button>
+              </a>
+              ${String(post.owner_id) === String(userId) ? `
+                <button onclick="openEditModal('${post.id}')">✏️ Edit</button>
+                <button onclick="deletePost('${post.id}')">🗑️ Delete</button>
+              ` : ""}
+            </div>
+          </div>
+        `;
 
       postsContainer.appendChild(postElement);
     });
@@ -291,7 +289,7 @@
           method: 'POST',
           headers: {
             "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": getCookie('csrftoken'),  // penting!
+            "X-CSRFToken": getCookie('csrftoken'), 
           },
         });
 
@@ -307,7 +305,47 @@
       }
     };
 
-    // Helper function buat ambil CSRF token dari cookie
+    window.toggleLike = async function(postId) {
+      // Check authentication di sisi server
+      try {
+        const response = await fetch(`/forum/like/${postId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie('csrftoken'),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Like toggled:", data);
+          
+          // Update button langsung tanpa reload semua posts
+          const likeBtn = document.getElementById(`like-btn-${postId}`);
+          if (likeBtn) {
+            likeBtn.innerHTML = data.liked 
+              ? `❤️ ${data.like_count}` 
+              : `🤍 ${data.like_count}`;
+            
+            // Ganti warna button
+            if (data.liked) {
+              likeBtn.classList.remove('bg-pink-500');
+              likeBtn.classList.add('bg-pink-600');
+            } else {
+              likeBtn.classList.remove('bg-pink-600');
+              likeBtn.classList.add('bg-pink-500');
+            }
+          }
+        } else {
+          const errorData = await response.json();
+          alert(errorData.error || "Failed to like post");
+        }
+      } catch (error) {
+        console.error("Error liking post:", error);
+        alert("Failed to like post. Please try again.");
+      }
+    };
+
     function getCookie(name) {
       let cookieValue = null;
       if (document.cookie && document.cookie !== "") {
@@ -393,26 +431,200 @@
       });
     }
     loadPosts();
+    // ==== COMMENT SYSTEM ====
+    const commentModal = document.getElementById("commentModal");
+    const closeCommentModal = document.getElementById("closeCommentModal");
+    const commentsList = document.getElementById("commentsList");
+    const commentForm = document.getElementById("commentForm");
+    const commentContent = document.getElementById("commentContent");
+    const commentPostId = document.getElementById("commentPostId");
+
+    window.openCommentModal = async function(postId) {
+      commentModal.classList.remove("hidden");
+      commentPostId.value = postId;
+      await loadComments(postId);
+    };
+
+    closeCommentModal.addEventListener("click", () => commentModal.classList.add("hidden"));
+
+    async function loadComments(postId) {
+      // Tampilkan loading dulu
+      commentsList.innerHTML = "<p class='text-gray-400 text-center'>Loading comments...</p>";
+
+      try {
+        const response = await fetch(`/forum/comment/${postId}/`);
+        
+        if (!response.ok) throw new Error("Failed to fetch comments");
+
+        const comments = await response.json();
+        console.log("Comments fetched:", comments); // Debugging
+
+        // Kosongkan dulu list
+        commentsList.innerHTML = "";
+
+        if (!comments || comments.length === 0) {
+          commentsList.innerHTML = "<p class='text-gray-500 text-center'>No comments yet.</p>";
+          return;
+        }
+
+        // Loop semua komentar dan append
+        comments.forEach(c => {
+          const cDiv = document.createElement("div");
+          cDiv.className = "border rounded-md p-2 bg-white";
+
+          // Format tanggal lebih rapi
+          const date = new Date(c.created_at).toLocaleString('id-ID', { 
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+
+          cDiv.innerHTML = `
+            <p class="font-semibold">${c.user}</p>
+            <p class="text-gray-700">${c.content}</p>
+            <p class="text-gray-400 text-xs">${date}</p>
+          `;
+
+          commentsList.appendChild(cDiv);
+        });
+
+      } catch (err) {
+        console.error("Error loading comments:", err);
+        commentsList.innerHTML = "<p class='text-red-500 text-center'>Failed to load comments.</p>";
+      }
+    }
+
+
+    if (commentForm) {
+      commentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const postId = commentPostId.value;
+        const content = commentContent.value.trim();
+        if (!content) return alert("Comment cannot be empty!");
+
+        try {
+          const response = await fetch(`/forum/comment/${postId}/add/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+              "X-Requested-With": "XMLHttpRequest",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `content=${encodeURIComponent(content)}`,
+          });
+
+          if (response.ok) {
+            commentContent.value = "";
+            await loadComments(postId);
+          } else {
+            alert("Failed to send comment");
+          }
+        } catch (error) {
+          console.error("Error adding comment:", error);
+        }
+      });
+    }
+
   });
 </script>
 
 <style>
-  /* .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  } */
+  body {
+    background-color: #f5f8fa;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
 
   #posts-container > div {
     background-color: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 1rem;
-    padding: 1rem 1.25rem;
-    transition: box-shadow 0.2s;
+    border-bottom: 1px solid #e1e8ed;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    transition: background-color 0.2s;
   }
+
   #posts-container > div:hover {
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    background-color: #f7f9fa;
+  }
+
+  .post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #d9d9d9;
+    flex-shrink: 0;
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+  }
+
+  .post-header .username {
+    font-weight: 600;
+    color: #14171a;
+  }
+
+  .post-header .time {
+    color: #657786;
+    font-size: 0.85rem;
+  }
+
+  .post-description {
+    color: #14171a;
+    font-size: 1rem;
+    margin-top: 4px;
+    white-space: pre-line;
+  }
+
+  .post-thumbnail {
+    border-radius: 12px;
+    margin-top: 10px;
+    max-height: 350px;
+    width: 100%;
+    object-fit: cover;
+    border: 1px solid #e1e8ed;
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 10px;
+    color: #657786;
+    font-size: 0.95rem;
+  }
+
+  .post-actions button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .post-actions button:hover {
+    color: #1da1f2;
+  }
+
+  /* Filter + Modal tweaks */
+  #filter-all, #filter-my {
+    border-radius: 9999px;
+    padding: 6px 14px;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  #createPostModal, #editPostModal, #commentModal {
+    backdrop-filter: blur(4px);
+  }
+
+  textarea, input, select {
+    border-radius: 10px !important;
   }
 </style>
 {% endblock content %}

@@ -5,10 +5,11 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from apps.forumModule.forms import PostForm
-from apps.forumModule.models import Post
+from apps.forumModule.models import Post, Comment
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+
 
 def show_main(request):
     filter_type = request.GET.get("filter", "all")
@@ -125,6 +126,77 @@ def delete_post(request, id):
     
     return HttpResponseRedirect(reverse("forumModule:show_main"))
 
+@login_required
+def toggle_like(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    user = request.user
+
+    if user in post.likes.all():
+        post.likes.remove(user)
+        liked = False
+    else:
+        post.likes.add(user)
+        liked = True
+
+    return JsonResponse({
+        'liked': liked,
+        'like_count': post.likes.count(),
+    })
+
+@login_required
+def check_user_liked(request, post_id):
+    """Check if current user has liked this post"""
+    try:
+        post = get_object_or_404(Post, pk=post_id)
+        liked = request.user in post.likes.all()
+        return JsonResponse({
+            'liked': liked,
+            'like_count': post.like_count
+        })
+    except:
+        return JsonResponse({'liked': False, 'like_count': 0})
+
+@login_required
+@require_http_methods(["POST"])
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    content = request.POST.get("content", "").strip()
+
+    if not content:
+        return JsonResponse({"error": "Comment cannot be empty."}, status=400)
+
+    comment = Comment.objects.create(
+        post=post,
+        author=request.user,
+        content=content,
+    )
+
+
+    return JsonResponse({
+        "message": "Comment added successfully.",
+        "comment": {
+            "user": comment.author.username,
+            "content": comment.content,
+            "created_at": comment.created_at.strftime("%Y-%m-%d %H:%M"),
+        },
+        "comment_count": post.comments.count(),
+    })
+
+def get_comments(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comments = post.comments.select_related("author").order_by("-created_at")
+
+    data = [
+        {
+            "user": comment.author.username,
+            "content": comment.content,
+            "created_at": comment.created_at.strftime("%Y-%m-%d %H:%M"),
+        }
+        for comment in comments
+    ]
+
+    return JsonResponse(data, safe=False)
+
 
 def show_json(request):
     posts = Post.objects.select_related('owner').order_by('-created_at')
@@ -136,6 +208,7 @@ def show_json(request):
             'category': post.category,
             'post_views': post.post_views,
             'is_hot': post.is_post_hot,
+            'like_count': post.likes.count(), 
             'created_at': post.created_at.isoformat() if post.created_at else None,
             'owner_id': post.owner.id if post.owner else None,
             'owner_username': post.owner.username if post.owner else None,
@@ -164,14 +237,11 @@ def show_json(request):
 def show_json_by_id(request, post_id):
     post = None
 
-    # 1️⃣ Coba ambil dari database dulu (handle UUID dan integer)
     try:
-        # Kalau post_id valid UUID
         try:
             uuid.UUID(post_id)
             post = Post.objects.select_related('owner').get(pk=post_id)
         except ValueError:
-            # Kalau bukan UUID, coba pakai integer
             try:
                 post = Post.objects.select_related('owner').get(pk=int(post_id))
             except (ValueError, TypeError, Post.DoesNotExist):
@@ -185,6 +255,7 @@ def show_json_by_id(request, post_id):
                 "category": post.category,
                 "post_views": post.post_views,
                 "is_hot": post.is_post_hot,
+                "like_count": post.likes.count(),
                 "created_at": post.created_at.isoformat() if post.created_at else None,
                 "owner_id": post.owner.id if post.owner else None,
                 "owner_username": post.owner.username if post.owner else None,
@@ -193,7 +264,6 @@ def show_json_by_id(request, post_id):
     except Exception:
         pass
 
-    # 2️⃣ Kalau gak ada di DB, coba cek di file forum.json
     file_path = os.path.join(settings.BASE_DIR, 'data', 'forum.json')
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -204,5 +274,4 @@ def show_json_by_id(request, post_id):
     except FileNotFoundError:
         pass
 
-    # 3️⃣ Kalau gak ketemu juga
     raise Http404("Post not found")

@@ -35,6 +35,20 @@
                     <span>Loading...</span>
                 </div>
 
+                <!-- TAMBAHAN: Action Bar (Like & Comment) -->
+                <div class="border-t border-gray-200 pt-3 mb-4">
+                    <div class="flex items-center gap-6 text-gray-600">
+                        <button id="like-button" onclick="toggleLike()" class="flex items-center gap-1 hover:text-pink-600">
+                            <span id="like-icon">🤍</span>
+                            <span id="like-count">0</span>
+                        </button>
+                        <div class="flex items-center gap-1">
+                            <span>💬</span>
+                            <span id="comment-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Footer (Author + Action) -->
                 <div id="post-footer" class="border-t border-gray-200 pt-4 flex items-center justify-between text-gray-700 text-sm">
                     <p id="post-author" class="font-medium">Author: Loading...</p>
@@ -58,10 +72,31 @@
                 </div>
             </div>
         </article>
+
+        <!-- TAMBAHAN: Comment Section -->
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm mt-4 overflow-hidden">
+            {% if user.is_authenticated %}
+            <div class="p-4 border-b border-gray-200">
+                <form id="comment-form">
+                    {% csrf_token %}
+                    <textarea id="comment-input" placeholder="Write a comment..." rows="2" class="w-full border rounded-lg px-3 py-2 mb-2"></textarea>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">Comment</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="p-4 border-b bg-gray-50 text-center text-gray-600">
+                Please login to comment
+            </div>
+            {% endif %}
+            
+            <div id="comments-container" class="divide-y">
+                <p class="p-4 text-center text-gray-500 text-sm">Loading comments...</p>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- 🟩 Modal Edit -->
+<!-- Modal Edit -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
         <button id="closeEditModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">&times;</button>
@@ -88,14 +123,83 @@
                 <button type="button" id="cancelEdit" class="px-4 py-2 text-gray-600 border rounded-md hover:bg-gray-100">Cancel</button>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
             </div>
-
         </form>
     </div>
 </div>
 
 <script>
+const postId = "{{ post_id }}";
+const isAuthenticated = "{{ user.is_authenticated }}" === "True";
+
+// TAMBAHAN: Helper function
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// TAMBAHAN: Toggle Like
+window.toggleLike = async function() {
+  if (!isAuthenticated) {
+    alert("Please login to like posts!");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/forum/like/${postId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie('csrftoken'),
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById('like-count').textContent = data.like_count;
+      document.getElementById('like-icon').textContent = data.liked ? '❤️' : '🤍';
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
+// TAMBAHAN: Load Comments
+async function loadComments() {
+  try {
+    const response = await fetch(`/forum/comment/${postId}/`);
+    const comments = await response.json();
+    
+    const container = document.getElementById('comments-container');
+    document.getElementById('comment-count').textContent = comments.length;
+    
+    if (comments.length === 0) {
+      container.innerHTML = '<p class="p-4 text-center text-gray-500 text-sm">No comments yet</p>';
+      return;
+    }
+    
+    container.innerHTML = comments.map(c => `
+      <div class="p-4">
+        <p class="font-semibold text-sm">${c.user}</p>
+        <p class="text-gray-700 text-sm mt-1">${c.content}</p>
+        <p class="text-xs text-gray-500 mt-1">${c.created_at}</p>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
-  const postId = "{{ post_id }}";
   const url = `/forum/json/${postId}/`;
 
   try {
@@ -122,6 +226,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("post-content").textContent = data.description || "(No content)";
 
+    // TAMBAHAN: Set like count
+    document.getElementById('like-count').textContent = data.like_count || 0;
+
     if (data.thumbnail) {
       const thumbContainer = document.getElementById("post-thumbnail-container");
       const thumb = document.getElementById("post-thumbnail");
@@ -132,7 +239,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("post-author").innerHTML = `<p class="font-medium">Author: ${data.owner_username || "Anonymous"}</p>`;
 
-    // 🟩 Modal handling
+    // Modal handling
     const modal = document.getElementById("editModal");
     const openModal = document.getElementById("openEditModal");
     const closeModal = document.getElementById("closeEditModal");
@@ -150,7 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("editCategory").value = data.category || "";
         document.getElementById("editDescription").value = data.description || "";
         document.getElementById("editThumbnail").value = data.thumbnail || "";
-        });
+    });
 
     const close = () => modal.classList.add("hidden");
     closeModal.addEventListener("click", close);
@@ -175,11 +282,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("Error: " + JSON.stringify(result.error));
       }
     });
+
+    // TAMBAHAN: Load comments
+    await loadComments();
+
   } catch (err) {
     document.getElementById("post-detail").innerHTML = `
       <div class="p-4 sm:p-6 text-center text-red-600 font-medium">
         Error loading post: ${err.message}
       </div>`;
+  }
+
+  // TAMBAHAN: Comment form handler
+  const commentForm = document.getElementById('comment-form');
+  if (commentForm) {
+    commentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('comment-input');
+      const content = input.value.trim();
+      
+      if (!content) return alert("Comment cannot be empty!");
+
+      try {
+        const response = await fetch(`/forum/comment/${postId}/add/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie('csrftoken'),
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `content=${encodeURIComponent(content)}`,
+        });
+
+        if (response.ok) {
+          input.value = "";
+          await loadComments();
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
   }
 });
 </script>
