@@ -118,6 +118,7 @@
 
       <!-- Mobile User Section -->
       <div class="border-t border-gray-200 pt-4">
+        {% if user.is_authenticated %}
         <a
           href=""
           onclick="logoutUser(event)"
@@ -125,6 +126,7 @@
         >
           Logout
         </a>
+        {% else %}
         <div class="space-y-3">
           <a
             href="{% url 'main:show_login' %}"
@@ -139,6 +141,7 @@
             Register
           </a>
         </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -151,23 +154,26 @@
     });
 
     async function logoutUser(e) {
-    e.preventDefault();
+      e.preventDefault();
 
-    const response = await fetch("{% url 'main:logout' %}", {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": "{{ csrf_token }}",
-      },
-    });
+      const response = await fetch("{% url 'main:logout' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.status === 200) {
-      alert(data.message);
-      window.location.href = "";
-    } else {
-      alert(data.message);
+      if (!response.ok) {
+        showToast(data.message, "", "error");
+      }
+
+      showToast(data.message, "", "success");
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
     }
-  }
   </script>
 </nav>
