@@ -1,9 +1,6 @@
 from apps.main.views import show_main, register_user, login_user, get_all_user,show_login, logout_user
 from django.urls import path
 
-# import views dari module venue
-from apps.venueModule.views import show_venue, venue_detail
-
 app_name = 'main'
 
 urlpatterns = [

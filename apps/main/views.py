@@ -44,10 +44,7 @@ def register_user(request):
     
     return JsonResponse({
         'message': 'Account created successfully!',
-        'data': {
-            'username': user.username,
-            'id': user.id # type: ignore
-        }
+        'data': data
     }, status=201)
 
 @csrf_exempt
