@@ -5,7 +5,7 @@ from django.utils.html import strip_tags
 class PostForm(ModelForm):
     class Meta:
         model = Post
-        fields = ["title", "content"]
+        fields = ["description", "thumbnail", "category"]
 
     def clean_title(self):
         title = self.cleaned_data["title"]
