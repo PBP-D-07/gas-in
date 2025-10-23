@@ -7,210 +7,176 @@
 
 {% block content %}
 
-<div class="flex flex-col items-center pt-20 min-h-screen">
-    <p>Welcome to the venue page!</p>
-    <p>Pick your favorite venue!!!</p>
-    <div class="mt-4">
-        <a href="{% url 'main:show_main' %}" class="text-blue-500 hover:underline">Back to Home</a>
+<div class="min-h-screen">
+  <!-- Hero / Landing -->
+  <section class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-20">
+    <div class="mx-auto px-4 text-center">
+      <h1 class="text-5xl font-extrabold mb-4">Temukan Tempat Olahraga Terbaik</h1>
+      <p class="text-xl opacity-90 mb-8">Cari dan pesan venue olahraga di sekitarmu — lari, futsal, badminton, dan lainnya.</p>
+      <div class="flex items-center justify-center gap-4">
+        <a id="cta-view" href="#grid" class="inline-block bg-white text-blue-700 font-semibold px-6 py-3 rounded shadow hover:-translate-y-1 transition-transform">Lihat Semua Venue</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'venue:add_venue_entry_ajax' %}" class="inline-block bg-white/20 border border-white text-white px-5 py-3 rounded hover:bg-white/30">Tambah Venue</a>
+        {% else %}
+        <a href="{% url 'main:show_login' %}" class="inline-block bg-white/20 border border-white text-white px-5 py-3 rounded hover:bg-white/30">Masuk untuk Menambah</a>
+        {% endif %}
+      </div>
     </div>
+  </section>
 
-    <!-- Loading State -->
-    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
-      <svg class="animate-spin h-8 w-8 text-blue-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-gray-600 mt-3">Loading products...</p>
-    </div>
+  <!-- Loading State -->
+  <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+    <svg class="animate-spin h-8 w-8 text-blue-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <p class="text-gray-600 mt-3">Loading venues...</p>
+  </div>
 
-    <!-- Error State -->
-    <div id="error" class="hidden"></div>
+  <!-- Error State -->
+  <div id="error" class="hidden my-4"></div>
 
   <!-- Product Grid -->
-  <div id="grid" class="hidden mt-6"></div>
-  <pre id="venue-debug-list" class="whitespace-pre-wrap text-xs text-gray-500 mt-4"></pre>
+  <div id="grid" class="hidden mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
 
-  <script>
-    // Configuration
-    const VENUE_API_ENDPOINT = "{% url 'venue:show_json_venue' %}";
-    const CURRENT_USER_ID = String({{ user.id|default_if_none:'null' }} || '');
+  <div class="mt-6 text-center">
+      <a href="{% url 'main:show_main' %}" class="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors">
+        <span>Kembali ke Beranda</span>
+      </a>
+  </div>
+</div>
 
-    // DOM elements
-    const loadingSpinner = document.getElementById('loading');
-    const errorMessage = document.getElementById('error');
-    const eventGridContainer = document.getElementById('grid');
-    const debugListEl = document.getElementById('venue-debug-list');
+<script>
+// Configuration
+const VENUE_API_ENDPOINT = "{% url 'venue:show_json_venue' %}";
+const CURRENT_USER_ID = String({{ user.id|default_if_none:'null' }} || '');
 
-    function showLoading() {
-      if (loadingSpinner && loadingSpinner.classList) loadingSpinner.classList.remove('hidden');
-      if (errorMessage && errorMessage.classList) errorMessage.classList.add('hidden');
+// DOM elements
+const loadingSpinner = document.getElementById('loading');
+const errorMessage = document.getElementById('error');
+const venueGridContainer = document.getElementById('grid');
+
+// Show/hide page sections
+function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+  loadingSpinner.classList.toggle('hidden', !showLoading);
+  errorMessage.classList.toggle('hidden', !showError);
+  venueGridContainer.classList.toggle('hidden', !showGrid);
+  
+  // Add container + grid classes when showing grid so spacing and max width are preserved
+  if (showGrid) {
+    venueGridContainer.className = 'mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
+  }
+}
+
+// Get readable category name
+function getReadableCategoryName(categoryCode) {
+  const categoryMapping = {
+    running: 'Lari',
+    badminton: 'Badminton',
+    futsal: 'Futsal',
+    football: 'Sepak Bola',
+    basketball: 'Basket',
+    cycling: 'Sepeda',
+    volleyball: 'Voli',
+    yoga: 'Yoga',
+    padel: 'Padel',
+    other: 'Lainnya',
+  };
+  return categoryMapping[categoryCode] || categoryCode;
+}
+
+// Create venue card element
+function buildVenueCardElement(item) {
+    const article = document.createElement('article');
+    article.className = 'bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
+
+  const linkDetail = `{% url 'venue:venue_detail' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
+
+    const name = DOMPurify.sanitize(item.name);
+    const description = DOMPurify.sanitize(item.description);
+    const location = DOMPurify.sanitize(item.location);
+    const thumbnail = DOMPurify.sanitize(item.thumbnail);
+    const category = DOMPurify.sanitize(item.category);
+    const contactNumber = DOMPurify.sanitize(item.contact_number);
+    const owner = DOMPurify.sanitize(item.owner);
+    const createdAt = DOMPurify.sanitize(new Date(item.created_at).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    }));
+    const thumbnailHtml = DOMPurify.sanitize(
+        item.thumbnail ? `<img src='${thumbnail}' alt='${name}' class='w-full h-full object-cover'>` : `<div class='w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center'></div>`
+    );
+    const categoryLabel = DOMPurify.sanitize(getReadableCategoryName(category));
+
+    const cardHtml = `
+        <div class="aspect-[16/9] overflow-hidden">
+          ${thumbnailHtml}
+        </div>
+        <div class="p-5 flex flex-col flex-1">
+          <div class="mb-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-600 text-white">${categoryLabel}</span>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+            <a href="${linkDetail}" class="hover:text-green-600 transition-colors">${name}</a>
+          </h3>
+          <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">${location}</p>
+          <div class="pt-4 border-t border-gray-100 flex items-center justify-between mt-auto">
+            <a href="${linkDetail}" class="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors">Read more</a>
+          </div>
+        </div>
+    `;
+    
+    article.innerHTML = cardHtml;
+    return article;
+}
+
+// Render all venue cards
+function renderAllVenueCards(venueItems) {
+  venueGridContainer.innerHTML = '';
+  venueItems.forEach(venueItem => {
+    const cardElement = buildVenueCardElement(venueItem);
+    venueGridContainer.appendChild(cardElement);
+  });
+}
+
+// Fetch venue data from server
+async function fetchVenuesFromServer() {
+  try {
+    displayPageSection({ showLoading: true });
+
+    const response = await fetch(VENUE_API_ENDPOINT, {
+      headers: { 'Accept': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch venue data from server');
     }
 
-    function showError(msg) {
-      if (loadingSpinner && loadingSpinner.classList) loadingSpinner.classList.add('hidden');
-      if (errorMessage) {
-        errorMessage.classList.remove('hidden');
-        errorMessage.innerHTML = `<div class="bg-red-50 border border-red-100 text-red-700 p-4 rounded">${DOMPurify.sanitize(msg)}</div>`;
-      }
-    }
+  const venueData = await response.json();
+  // Render all received venues directly
+  renderAllVenueCards(venueData || []);
+  displayPageSection({ showGrid: true });
+  } catch (error) {
+    console.error('Error loading venues:', error);
+    displayPageSection({ showError: true });
+  }
+}
 
-    function clearError() {
-      if (errorMessage && errorMessage.classList) errorMessage.classList.add('hidden');
-    }
+// Initialize page
+function initializeVenuePage() {
+  fetchVenuesFromServer();
+}
 
-    function clearGrid() {
-      if (eventGridContainer) eventGridContainer.innerHTML = '';
-    }
+// Start application
+initializeVenuePage();
 
-    function getReadableCategoryName(code) {
-      const map = { concert:'Concert', sports:'Sports', theater:'Theater', conference:'Conference', exhibition:'Exhibition', other:'Other' };
-      return map[code] || code || 'Other';
-    }
+// Add event listener to detect new venues
+document.addEventListener('venueAdded', function() {
+    // Refresh venue data without page reload
+    fetchVenuesFromServer();
+});
 
-    function buildVenueCard(item) {
-  const article = document.createElement('article');
-  // add margin so each card has breathing room from its neighbors and the grid edges
-  article.className = 'm-2 bg-white rounded-lg border-2 border-gray-300 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
+</script>
 
-      // image area
-      const imgWrap = document.createElement('div');
-      imgWrap.className = 'aspect-square relative overflow-hidden';
-      if (item.thumbnail) {
-        const img = document.createElement('img');
-        img.src = DOMPurify.sanitize(item.thumbnail);
-        img.alt = DOMPurify.sanitize(item.name || '');
-        img.className = 'w-full h-full object-cover';
-        imgWrap.appendChild(img);
-      } else {
-        const placeholder = document.createElement('div');
-        placeholder.className = 'w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center';
-        placeholder.innerText = 'No image';
-        imgWrap.appendChild(placeholder);
-      }
-
-      // body
-      const body = document.createElement('div');
-      body.className = 'p-4 flex flex-col flex-1';
-
-      const topRow = document.createElement('div');
-      topRow.className = 'flex items-center gap-2 mb-3';
-      const cat = document.createElement('span');
-      cat.className = 'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-600 text-white';
-      cat.textContent = getReadableCategoryName(item.category);
-      topRow.appendChild(cat);
-      const status = document.createElement('div');
-      status.innerHTML = item.is_accepted ? '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800">Accepted</span>' : '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>';
-      topRow.appendChild(status);
-
-      const h3 = document.createElement('h3');
-      h3.className = 'text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight';
-      const a = document.createElement('a');
-      a.href = `{% url 'venue:venue_detail' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
-      a.className = 'hover:text-blue-600 transition-colors text-3xl';
-      a.textContent = item.name || '';
-      h3.appendChild(a);
-
-  // description intentionally omitted per UI request
-
-      const loc = document.createElement('div');
-      loc.className = 'text-sm text-gray-500 mb-3';
-      loc.textContent = 'Location: ' + (item.location || 'Unknown');
-
-
-      const footer = document.createElement('div');
-      footer.className = 'pt-4 border-t border-gray-200 flex items-center justify-between mt-auto';
-      const view = document.createElement('a');
-      view.href = a.href;
-      view.className = 'text-blue-600 hover:text-green-700 font-medium text-sm transition-colors';
-      view.textContent = 'View';
-      footer.appendChild(view);
-
-      // owner actions (if current user owns it)
-      if (CURRENT_USER_ID && item.owner_id && String(CURRENT_USER_ID) === String(item.owner_id)) {
-        const actions = document.createElement('div');
-        actions.className = 'flex space-x-2';
-        const btnEdit = document.createElement('button');
-        btnEdit.className = 'text-gray-600 hover:text-gray-700 text-sm';
-        btnEdit.textContent = 'Edit';
-        btnEdit.onclick = () => { window.location.href = a.href + 'edit/'; };
-        const btnDel = document.createElement('button');
-        btnDel.className = 'text-red-600 hover:text-red-700 text-sm';
-        btnDel.textContent = 'Delete';
-        btnDel.onclick = () => { if (confirm(`Delete venue "${item.name}"?`)) alert('Delete not implemented'); };
-        actions.appendChild(btnEdit);
-        actions.appendChild(btnDel);
-        footer.appendChild(actions);
-      }
-
-      body.appendChild(topRow);
-  body.appendChild(h3);
-  body.appendChild(loc);
-      body.appendChild(footer);
-
-      article.appendChild(imgWrap);
-      article.appendChild(body);
-      return article;
-    }
-
-    function renderGrid(data) {
-      clearError();
-      // query grid at render time in case DOM changed
-      const gridEl = document.getElementById('grid');
-      if (!gridEl) {
-        showError('Internal error: grid container not found in the page DOM.');
-        console.error('[venue] renderGrid: #grid element not found');
-        return;
-      }
-      // clear existing children
-      gridEl.innerHTML = '';
-      if (!Array.isArray(data) || data.length === 0) {
-        if (debugListEl) debugListEl.textContent = 'No venues found.';
-        gridEl.classList.add('hidden');
-        if (loadingSpinner && loadingSpinner.classList) loadingSpinner.classList.add('hidden');
-        return;
-      }
-
-      if (debugListEl) {
-        debugListEl.textContent = data.slice(0,20).map((it,i)=>`${i+1}. ${it.name || '[no name]'} (${it.id})`).join('\n');
-      }
-
-      if (gridEl && gridEl.classList) {
-  // add padding to the grid container and increase gap between items
-  gridEl.className = 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4';
-        gridEl.classList.remove('hidden');
-      }
-
-      data.forEach(item => {
-        try {
-          const card = buildVenueCard(item);
-          gridEl.appendChild(card);
-        } catch (e) {
-          console.error('Error building venue card', e, item);
-        }
-      });
-    }
-
-    async function fetchVenues() {
-      showLoading();
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-        const resp = await fetch(VENUE_API_ENDPOINT, { credentials: 'same-origin', signal: controller.signal });
-        clearTimeout(timeout);
-        if (!resp.ok) throw new Error('Server returned ' + resp.status);
-        const data = await resp.json();
-        renderGrid(data);
-      } catch (err) {
-        console.error('Failed to load venues', err);
-        showError('Failed to load venues.');
-      } finally {
-        if (loadingSpinner && loadingSpinner.classList) loadingSpinner.classList.add('hidden');
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', fetchVenues);
-
-    // end script
-    </script>
-
-    {% endblock content %}
+{% endblock content %}

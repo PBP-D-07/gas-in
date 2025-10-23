@@ -5,12 +5,16 @@ from apps.main.models import User
 
 class Venue(models.Model):
     CATEGORY_CHOICES = [
-        ('concert', 'Concert'),
-        ('sports', 'Sports'),
-        ('theater', 'Theater'),
-        ('conference', 'Conference'),
-        ('exhibition', 'Exhibition'),
-        ('other', 'Other'),
+    ('running', 'Lari'),
+    ('badminton', 'Badminton'),
+    ('futsal', 'Futsal'),
+    ('football', 'Sepak Bola'),
+    ('basketball', 'Basket'),
+    ('cycling', 'Sepeda'),
+    ('volleyball', 'Voli'),
+    ('yoga', 'Yoga'),
+    ('padel', 'Padel'),
+    ('other', 'Lainnya'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -21,6 +25,7 @@ class Venue(models.Model):
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='other')
     created_at = models.DateTimeField(auto_now_add=True)
     is_accepted = models.BooleanField(default=False)
+    contact_number = models.CharField(max_length=12, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='owned_venues')
 
     def __str__(self):
