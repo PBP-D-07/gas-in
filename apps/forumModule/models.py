@@ -3,10 +3,20 @@ from django.db import models
 from django.conf import settings
 
 class Post(models.Model):
+    CATEGORY_CHOICES = [
+        ('transfer', 'Transfer'),
+        ('update', 'Update'),
+        ('exclusive', 'Exclusive'),
+        ('match', 'Match'),
+        ('rumor', 'Rumor'),
+        ('analysis', 'Analysis'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     description = models.TextField()
-    thumbnail = models.CharField(max_length=255)
-    category = models.CharField(max_length=100)
+    thumbnail = models.CharField(max_length=255, blank=True, null=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='update')
+    post_views = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

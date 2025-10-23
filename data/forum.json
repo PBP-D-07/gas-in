@@ -1,0 +1,82 @@
+[
+    {
+      "id": 1,
+      "description": "Breaking news! Manchester United is reportedly in talks with Bayern Munich for a potential transfer deal. Sources close to the club suggest negotiations are progressing well.",
+      "thumbnail": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800",
+      "category": "transfer",
+      "post_views": 45,
+      "created_at": "2025-10-20T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "description": "Match recap: Liverpool dominates with a stunning 4-1 victory against Chelsea at Anfield. Salah scores a hat-trick in this crucial Premier League clash!",
+      "thumbnail": "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800",
+      "category": "match",
+      "post_views": 128,
+      "created_at": "2025-10-21T15:45:00Z"
+    },
+    {
+      "id": 3,
+      "description": "Exclusive interview with Pep Guardiola discussing Manchester City's tactics and future plans for the Champions League campaign. Don't miss this insider perspective!",
+      "thumbnail": "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800",
+      "category": "exclusive",
+      "post_views": 87,
+      "created_at": "2025-10-21T18:20:00Z"
+    },
+    {
+      "id": 4,
+      "description": "Rumors suggest Real Madrid is preparing a massive bid for Kylian Mbappé next summer. Paris Saint-Germain remains tight-lipped about the speculation.",
+      "thumbnail": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800",
+      "category": "rumor",
+      "post_views": 156,
+      "created_at": "2025-10-22T09:15:00Z"
+    },
+    {
+      "id": 5,
+      "description": "Latest updates from the training ground: Arsenal's new signing adapts quickly to the team's playing style. Arteta praises his professionalism and dedication.",
+      "thumbnail": "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800",
+      "category": "update",
+      "post_views": 34,
+      "created_at": "2025-10-22T12:00:00Z"
+    },
+    {
+      "id": 6,
+      "description": "Tactical analysis: How Barcelona's possession-based football evolved under Xavi. Breaking down the key strategic changes and their impact on results.",
+      "thumbnail": "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800",
+      "category": "analysis",
+      "post_views": 92,
+      "created_at": "2025-10-22T14:30:00Z"
+    },
+    {
+      "id": 7,
+      "description": "Transfer window heating up! Multiple clubs reportedly interested in signing the young Brazilian wonderkid. His current club demands €80 million transfer fee.",
+      "thumbnail": "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800",
+      "category": "transfer",
+      "post_views": 203,
+      "created_at": "2025-10-23T08:45:00Z"
+    },
+    {
+      "id": 8,
+      "description": "Injury update: Star midfielder ruled out for 6 weeks following knee surgery. Team medical staff provides detailed recovery timeline and rehabilitation plan.",
+      "thumbnail": null,
+      "category": "update",
+      "post_views": 67,
+      "created_at": "2025-10-23T11:20:00Z"
+    },
+    {
+      "id": 9,
+      "description": "Champions League prediction: Analyzing the quarter-final matchups and potential dark horses. Statistical breakdown of team performances this season.",
+      "thumbnail": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800",
+      "category": "analysis",
+      "post_views": 145,
+      "created_at": "2025-10-23T16:00:00Z"
+    },
+    {
+      "id": 10,
+      "description": "Exclusive behind-the-scenes footage from derby day preparation. See how players mentally prepare for the biggest match of the season!",
+      "thumbnail": "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=800",
+      "category": "exclusive",
+      "post_views": 178,
+      "created_at": "2025-10-23T19:30:00Z"
+    }
+  ]

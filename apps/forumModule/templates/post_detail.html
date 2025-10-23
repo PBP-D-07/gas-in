@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <p>
-  <a href="{% url 'main:show_main' %}">
+  <a href="{% url 'forumModule:show_main' %}">
     <button>← Back to Post List</button>
   </a>
 </p>
@@ -19,8 +19,8 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
-    const postId = "{{ post_id }}"; 
-    const url = `/forumModule/json/${postId}/`;
+    const postId = "{{ post.id }}"; 
+    const url = `/forum/json/${postId}/`;
 
     try {
       const response = await fetch(url);
@@ -28,17 +28,17 @@
 
       const data = await response.json();
 
-      document.getElementById("post-title").textContent = data.title;
-      document.getElementById("post-content").textContent = data.content;
+      document.getElementById("post-title").textContent = data.category.toUpperCase();
+      document.getElementById("post-content").textContent = data.description;
 
       const meta = [];
-      if (data.is_post_hot) meta.push("🔥 Hot");
+      if (data.is_hot) meta.push("🔥 Hot");
       meta.push(`Created: ${new Date(data.created_at).toLocaleString()}`);
       meta.push(`Views: ${data.post_views}`);
       document.getElementById("post-meta").innerHTML = meta.join(" | ");
 
       document.getElementById("post-author").innerHTML =
-        `<b>Author:</b> ${data.author_username || "Anonymous"}`;
+        `<b>Author:</b> ${data.owner_username || "Anonymous"}`;
 
     } catch (err) {
       document.getElementById("post-detail").innerHTML =

@@ -15,34 +15,53 @@
   </div>
 
   <div class="flex gap-3">
+    {% if user.is_authenticated %}
     <button id="openCreatePostModal" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">
       + Add Post
-    </button>    
+    </button>
+    {% endif %}
     
-    <button id="filter-all" type="button" class="rounded-lg bg-gray-200 text-lg px-4 py-2">
+    <button id="filter-all" type="button" class="rounded-lg bg-gray-200 text-lg px-4 py-2 hover:bg-gray-300 transition">
       All Posts
     </button>
     
-    <button id="filter-my" type="button" class="rounded-lg bg-gray-200 text-lg px-4 py-2">
+    {% if user.is_authenticated %}
+    <button id="filter-my" type="button" class="rounded-lg bg-gray-200 text-lg px-4 py-2 hover:bg-gray-300 transition">
       My Posts
     </button>
+    {% endif %}
   </div>
 
+  <!-- Modal Create Post -->
   <div id="createPostModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
-      <button id="closeCreatePostModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">✕</button>
+      <button id="closeCreatePostModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">✕</button>
       <h2 class="text-xl font-semibold mb-4">Create New Post</h2>
 
       <form id="createPostForm" method="POST">
         {% csrf_token %}
+        
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-          <input type="text" name="title" class="w-full border rounded-lg px-3 py-2" required>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select name="category" class="w-full border rounded-lg px-3 py-2" required>
+            <option value="update">Update</option>
+            <option value="transfer">Transfer</option>
+            <option value="exclusive">Exclusive</option>
+            <option value="match">Match</option>
+            <option value="rumor">Rumor</option>
+            <option value="analysis">Analysis</option>
+          </select>
         </div>
 
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
-          <textarea name="content" class="w-full border rounded-lg px-3 py-2 h-32" required></textarea>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea name="description" class="w-full border rounded-lg px-3 py-2 h-32" required></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL (optional)</label>
+          <input type="url" name="thumbnail" class="w-full border rounded-lg px-3 py-2" placeholder="https://example.com/image.jpg">
+          <p class="text-xs text-gray-500 mt-1">Enter a valid image URL</p>
         </div>
 
         <div class="flex justify-end gap-2">
@@ -52,7 +71,6 @@
       </form>
     </div>
   </div>
-
 
   <hr class="border-gray-300">
 
@@ -82,7 +100,7 @@
         postsContainer.innerHTML = "";
 
         const filteredPosts = filter === "my"
-          ? posts.filter(p => String(p.user_id) === String(userId))
+          ? posts.filter(p => String(p.owner_id) === String(userId))
           : posts;
 
         if (filteredPosts.length === 0) {
@@ -91,45 +109,79 @@
         }
 
         filteredPosts.forEach(post => {
-          const postElement = document.createElement("div");
-          postElement.className = "p-6 border-2 border-gray-300 rounded-lg";
-          
-          postElement.innerHTML = `
-            <h2 class="text-2xl font-bold mb-2">
-              <a href="/forum/${post.id}/" class="hover:text-blue-600">${post.title}</a>
-            </h2>
-            <p class="text-gray-600 mb-3">
-              ${post.is_post_hot ? '<span class="text-red-500 font-bold">🔥 Hot</span> | ' : ''}
-              <i>${new Date(post.created_at).toLocaleString()}</i> |
-              Views: ${post.post_views} |
-              Author: ${post.author || "Unknown"}
-            </p>
-            <p class="text-gray-700 mb-4">
-              ${post.content.split(" ").slice(0, 25).join(" ")}...
-            </p>
-            <div class="flex gap-2">
-              <a href="/forum/${post.id}/">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                  Read More
-                </button>
-              </a>
-              ${String(post.user_id) === String(userId) ? `
-                <a href="/forum/edit/${post.id}/">
-                  <button class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-                    Edit
-                  </button>
-                </a>
-                <a href="/forum/delete/${post.id}/">
-                  <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                    Delete
-                  </button>
-                </a>
+        const postElement = document.createElement("div");
+        postElement.className = "flex items-start gap-4 p-5 border-2 border-gray-200 rounded-lg hover:shadow-md transition";
+
+        const categoryColors = {
+          'transfer': 'bg-blue-500',
+          'update': 'bg-green-500',
+          'exclusive': 'bg-purple-500',
+          'match': 'bg-red-500',
+          'rumor': 'bg-yellow-500',
+          'analysis': 'bg-indigo-500'
+        };
+        const badgeColor = categoryColors[post.category] || 'bg-gray-500';
+
+        postElement.innerHTML = `
+            <div class="flex gap-4 items-start">
+              ${post.thumbnail ? `
+                <img src="${post.thumbnail}" 
+                  alt="Post thumbnail" 
+                  class="w-40 h-40 object-cover rounded-xl border border-gray-300 flex-shrink-0" 
+                  onerror="this.style.display='none'">
               ` : ''}
+
+              <div class="flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="${badgeColor} text-white text-xs px-3 py-1 rounded-full font-semibold uppercase">
+                      ${post.category}
+                    </span>
+                    ${post.is_hot ? '<span class="text-red-500 font-bold text-lg">🔥 Hot</span>' : ''}
+                  </div>
+
+                  <p class="text-gray-800 mb-2 font-medium">
+                    ${post.description || "No description"}
+                  </p>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-3">
+                  <span class="font-semibold">${post.owner_username || "Unknown"}</span> • 
+                  ${new Date(post.created_at).toLocaleDateString('id-ID', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })} • 
+                  ${post.post_views} views
+                </p>
+
+                <div class="flex gap-2">
+                  <a href="/forum/${post.id}/">
+                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded-lg hover:bg-blue-600 transition text-sm">
+                      Read More
+                    </button>
+                  </a>
+                  ${String(post.owner_id) === String(userId) ? `
+                    <a href="/forum/edit/${post.id}/">
+                      <button class="bg-yellow-500 text-white px-4 py-1.5 rounded-lg hover:bg-yellow-600 transition text-sm">
+                        Edit
+                      </button>
+                    </a>
+                    <button onclick="deletePost('${post.id}')" 
+                      class="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition text-sm">
+                      Delete
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
             </div>
           `;
-          
-          postsContainer.appendChild(postElement);
-        });
+
+
+      postsContainer.appendChild(postElement);
+    });
 
       } catch (error) {
         console.error('Error loading posts:', error);
@@ -137,56 +189,116 @@
       }
     }
 
+    // Delete post function
+    window.deletePost = async function(postId) {
+      if (!confirm('Are you sure you want to delete this post?')) return;
+      
+      try {
+        const response = await fetch(`/forum/delete/${postId}/`, {
+          method: 'GET',
+        });
+        
+        if (response.ok) {
+          loadPosts();
+        } else {
+          alert('Failed to delete post');
+        }
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
+      }
+    };
+
     const modal = document.getElementById("createPostModal");
     const openBtn = document.getElementById("openCreatePostModal");
     const closeBtn = document.getElementById("closeCreatePostModal");
     const cancelBtn = document.getElementById("cancelCreatePost");
     const form = document.getElementById("createPostForm");
 
-    openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
-    closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-    cancelBtn.addEventListener("click", () => modal.classList.add("hidden"));
+    if (openBtn) {
+      openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
+    }
+    
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+    }
+    
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => modal.classList.add("hidden"));
+    }
 
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
+    if (form) {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-      const formData = new FormData(form);
+        const formData = new FormData(form);
 
-      try {
-        const response = await fetch("{% url 'forumModule:create_post' %}", {
-          method: "POST",
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
-          },
-          body: formData,
-        });
+        try {
+          const response = await fetch("{% url 'forumModule:create_post' %}", {
+            method: "POST",
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+              "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+            },
+            body: formData,
+          });
 
-        if (!response.ok) throw new Error("Failed to create post");
+          if (!response.ok) throw new Error("Failed to create post");
 
-        modal.classList.add("hidden");
-        form.reset();
+          modal.classList.add("hidden");
+          form.reset();
+          loadPosts();
 
-        loadPosts();
+        } catch (error) {
+          console.error("Error creating post:", error);
+          alert("Failed to create post. Please try again.");
+        }
+      });
+    }
 
-      } catch (error) {
-        console.error("Error creating post:", error);
-        alert("Failed to create post. Please try again.");
-      }
-    });
-
-
+    // Filter handlers
     filterAllBtn.addEventListener("click", (e) => {
       e.preventDefault();
+      filterAllBtn.classList.add('bg-green-600', 'text-white');
+      filterAllBtn.classList.remove('bg-gray-200');
+      if (filterMyBtn) {
+        filterMyBtn.classList.remove('bg-green-600', 'text-white');
+        filterMyBtn.classList.add('bg-gray-200');
+      }
       loadPosts("all");
     });
 
-    filterMyBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      loadPosts("my");
-    });
-
+    if (filterMyBtn) {
+      filterMyBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        filterMyBtn.classList.add('bg-green-600', 'text-white');
+        filterMyBtn.classList.remove('bg-gray-200');
+        filterAllBtn.classList.remove('bg-green-600', 'text-white');
+        filterAllBtn.classList.add('bg-gray-200');
+        loadPosts("my");
+      });
+    }
     loadPosts();
   });
 </script>
+
+<style>
+  /* .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  } */
+
+  #posts-container > div {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    transition: box-shadow 0.2s;
+  }
+  #posts-container > div:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+</style>
 {% endblock content %}
