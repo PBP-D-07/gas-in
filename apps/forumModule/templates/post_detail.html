@@ -1,50 +1,124 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<p>
-  <a href="{% url 'forumModule:show_main' %}">
-    <button>← Back to Post List</button>
-  </a>
-</p>
+<div class="bg-gray-100 w-full min-h-screen pt-16"> <!-- Tambah padding-top 16 (sesuaikan dengan tinggi navbar Anda) -->
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Navigation -->
+        <div class="mb-4 flex items-center justify-between">
+            <a href="{% url 'forumModule:show_main' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Homepage
+            </a>
+            {% if user.is_authenticated and user.username == post.owner_username %}
+            <div class="flex gap-2">
+                <a href="{% url 'forumModule:edit_post' post.id %}" class="px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors">
+                    Edit
+                </a>
+                <form action="{% url 'forumModule:delete_post' post.id %}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
+                        Delete
+                    </button>
+                </form>
+            </div>
+            {% else %}
+                <span class="text-xs text-red-500 hidden" id="debug-info">Debug: User not owner or not authenticated</span>
+            {% endif %}
+        </div>
 
-<div id="post-detail">
-  <h1 id="post-title">Loading...</h1>
+        <!-- Post Card -->
+        <article id="post-detail" class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-6">
+                <!-- Meta -->
+                <div id="post-meta" class="flex flex-wrap items-center gap-2 mb-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500 text-white">
+                        Loading...
+                    </span>
+                </div>
 
-  <p id="post-meta">
-    <i>Loading details...</i>
-  </p>
+                <!-- Thumbnail -->
+                <div id="post-thumbnail-container" class="hidden mb-4">
+                    <img id="post-thumbnail" class="w-full h-64 sm:h-80 object-cover rounded-lg" alt="Post thumbnail">
+                </div>
 
-  <p id="post-content"></p>
-  <p id="post-author"></p>
+                <!-- Content -->
+                <div id="post-content" class="text-gray-800 leading-relaxed whitespace-pre-line text-base mb-4">
+                    Loading...
+                </div>
+
+                <!-- Meta Details -->
+                <div id="post-meta-details" class="flex flex-wrap items-center text-xs text-gray-500 gap-3 mb-4">
+                    <span>Loading...</span>
+                </div>
+
+                <!-- Author -->
+                <div id="post-author" class="border-t border-gray-200 pt-4 text-gray-700 text-sm"></div>
+            </div>
+        </article>
+    </div>
 </div>
 
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
-    const postId = "{{ post.id }}"; 
+    const postId = "{{ post.id }}";
     const url = `/forum/json/${postId}/`;
 
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Post not found");
-
       const data = await response.json();
 
-      document.getElementById("post-title").textContent = data.category.toUpperCase();
-      document.getElementById("post-content").textContent = data.description;
+      console.log("Fetched data:", data); // Debug: Cek data yang dimuat
+      console.log("Current user:", "{{ user.username }}"); // Debug: Cek username user yang login
 
-      const meta = [];
-      if (data.is_hot) meta.push("🔥 Hot");
-      meta.push(`Created: ${new Date(data.created_at).toLocaleString()}`);
-      meta.push(`Views: ${data.post_views}`);
-      document.getElementById("post-meta").innerHTML = meta.join(" | ");
+      // Update meta
+      document.getElementById("post-meta").innerHTML = `
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500 text-white">
+          ${data.category ? data.category.toUpperCase() : "Uncategorized"}
+        </span>
+        ${data.is_hot ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">🔥 Hot</span>' : ''}
+      `;
 
-      document.getElementById("post-author").innerHTML =
-        `<b>Author:</b> ${data.owner_username || "Anonymous"}`;
+      // Update meta details
+      document.getElementById("post-meta-details").innerHTML = `
+        <time datetime="${new Date(data.created_at).toISOString()}">
+          ${new Date(data.created_at).toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric', 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+          })}
+        </time>
+        <span>${data.post_views} views</span>
+      `;
 
+      // Update content
+      document.getElementById("post-content").textContent = data.description || "(No content)";
+
+      // Update thumbnail
+      if (data.thumbnail) {
+        const thumbContainer = document.getElementById("post-thumbnail-container");
+        const thumb = document.getElementById("post-thumbnail");
+        thumb.src = data.thumbnail;
+        thumb.alt = data.category || "Post image";
+        thumbContainer.classList.remove("hidden");
+      }
+
+      // Update author
+      document.getElementById("post-author").innerHTML = `
+        <p class="font-medium">Author: ${data.owner_username || "Anonymous"}</p>
+      `;
     } catch (err) {
-      document.getElementById("post-detail").innerHTML =
-        `<p style="color:red;">Error loading post: ${err.message}</p>`;
+      document.getElementById("post-detail").innerHTML = `
+        <div class="p-4 sm:p-6 text-center text-red-600 font-medium">
+          Error loading post: ${err.message}
+        </div>`;
     }
   });
 </script>
-
 {% endblock content %}

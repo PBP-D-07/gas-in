@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from apps.forumModule.forms import PostForm
 from apps.forumModule.models import Post
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 
@@ -24,14 +24,34 @@ def show_main(request):
 
     return render(request, "forumMain.html", context)
 
+def show_post(request, post_id):
+    from apps.forumModule.models import Post
+    import uuid, json, os
+    from django.conf import settings
 
-def show_post(request, id):
-    post = get_object_or_404(Post, pk=id)
-    post.increment_views() 
-    
+    post = None
+
+    try:
+        uuid.UUID(post_id)
+        post = get_object_or_404(Post, pk=post_id)
+    except (ValueError, TypeError):
+        file_path = os.path.join(settings.BASE_DIR, 'data', 'forum.json')
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                for item in data:
+                    if str(item.get('id')) == post_id:
+                        post = item
+                        break
+        except FileNotFoundError:
+            pass
+
+    if not post:
+        raise Http404("Post not found")
+
     context = {
-        'post': post,
-        'comments': post.comments.all().order_by('-created_at')
+        'post': post if isinstance(post, Post) else None,
+        'json_post': post if isinstance(post, dict) else None,
     }
     return render(request, 'post_detail.html', context)
 
@@ -43,7 +63,6 @@ def create_post(request):
         post = form.save(commit=False)
         post.owner = request.user
         
-        # Handle thumbnail optional
         thumbnail = form.cleaned_data.get("thumbnail")
         if not thumbnail:
             post.thumbnail = None
@@ -65,38 +84,69 @@ def create_post(request):
 @login_required
 def edit_post(request, id):
     post = get_object_or_404(Post, pk=id, owner=request.user)
+
+    form = PostForm(request.POST, instance=post)
+    if form.is_valid():
+        form.save()
+
+        # Kalau request dari fetch() (AJAX)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"message": "Post updated successfully"})
+        
+        return redirect("forumModule:show_main")
     
-    if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
-        if form.is_valid():
-            form.save()
-            return redirect('forumModule:show_main')
-    else:
-        form = PostForm(instance=post)
+    # Kalau form invalid
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"error": form.errors}, status=400)
 
-    context = {'form': form, 'post': post}
-    return render(request, "edit_post.html", context)
-
+    return JsonResponse({"error": "Invalid form"}, status=400)
 
 @login_required
+@require_http_methods(["POST"])
 def delete_post(request, id):
     post = get_object_or_404(Post, pk=id, owner=request.user)
     post.delete()
-    return HttpResponseRedirect(reverse('forumModule:show_main'))
+    
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"message": "Post deleted successfully"})
+    
+    return HttpResponseRedirect(reverse("forumModule:show_main"))
+
 
 def show_json(request):
+    posts = Post.objects.select_related('owner').order_by('-created_at')
+    db_data = [
+        {
+            'id': str(post.id),
+            'description': post.description,
+            'thumbnail': post.thumbnail,
+            'category': post.category,
+            'post_views': post.post_views,
+            'is_hot': post.is_post_hot,
+            'created_at': post.created_at.isoformat() if post.created_at else None,
+            'owner_id': post.owner.id if post.owner else None,
+            'owner_username': post.owner.username if post.owner else None,
+        }
+        for post in posts
+    ]
+
     file_path = os.path.join(settings.BASE_DIR, 'data', 'forum.json')
+    file_data = []
 
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            file_data = json.load(f)
     except FileNotFoundError:
-        return JsonResponse({'error': 'forum.json file not found'}, status=404)
+        file_data = []
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+        file_data = []
 
-    return JsonResponse(data, safe=False)
-
+    combined_data = {
+        'from_database': db_data,
+        'from_file': file_data,
+    }
+    combined_data = db_data + file_data
+    return JsonResponse(combined_data, safe=False)
 
 def show_json_by_id(request, post_id):
     try:
