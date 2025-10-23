@@ -8,11 +8,9 @@ app_name = 'main'
 
 urlpatterns = [
     path('', show_main, name='show_main'),
-    path('register/', register_user, name='register_user'),
-    path('venues/', show_venue, name='show_venue'),
-    path('venues/<uuid:venue_id>/', venue_detail, name='venue_detail'),
+    path('register/', register_user, name='register'),
     path('api/login/', login_user, name='login'),
     path('api/logout/', logout_user, name='logout'),
     path('login/', show_login, name='show_login'),
-    path('users/', get_all_user, name='get_all_user')
+    path('users/', get_all_user, name='get_all_user'),
 ]

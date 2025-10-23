@@ -24,9 +24,20 @@ class Venue(models.Model):
     thumbnail = models.CharField(max_length=255, blank=True, null=True)
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='other')
     created_at = models.DateTimeField(auto_now_add=True)
-    is_accepted = models.BooleanField(default=False)
     contact_number = models.CharField(max_length=12, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='owned_venues')
 
     def __str__(self):
         return f"{self.name} ({self.category}) - {self.location}"
+
+
+class VenueImage(models.Model):
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='images')
+    image = models.CharField(max_length=255)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Image for {self.venue.name} ({self.image})"

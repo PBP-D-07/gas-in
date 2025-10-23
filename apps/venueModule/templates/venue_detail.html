@@ -2,74 +2,116 @@
 {% load static %}
 
 {% block meta %}
-<title>Venue Detail</title>
+<title>{{ venue.name }} - gas.in</title>
 {% endblock meta %}
 
 {% block content %}
-<div class="bg-gray-50 w-full min-h-screen">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Loading State -->
-        <div id="loading-state" class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <svg class="animate-spin h-8 w-8 text-blue-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-            <p class="text-gray-600 mt-3">Loading venue detail...</p>
-        </div>
+<main class="p-8 max-w-6xl mx-auto pt-30 pt-16" style="scroll-margin-top: 4rem;">
+  <!-- Loading State -->
+  <div id="loading-state" class="bg-white rounded-lg border border-gray-200 p-12 text-center">
+    <svg class="animate-spin h-8 w-8 text-blue-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+  <p class="text-gray-600 mt-3">Loading venue detail...</p>
+  </div>
 
-        <!-- Error State -->
-        <div id="error-state" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
-            <div class="w-16 h-16 mx-auto mb-4">
-                <div class="text-red-500 text-5xl">⚠️</div>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load venue</h3>
-            <p class="text-gray-500">Please try again later.</p>
-        </div>
-
-        <!-- Venue Content -->
-        <article id="article-content" class="bg-white rounded-lg border border-gray-200 overflow-hidden hidden">
-            <div class="p-6 sm:p-8">
-                <div id="badges-container" class="flex flex-wrap items-center gap-2 mb-4"></div>
-
-                <h1 id="article-title" class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-4"></h1>
-
-                <div class="flex flex-wrap items-center text-sm text-gray-500 gap-4">
-                    <time id="article-date"></time>
-                    <span id="article-views"></span>
-                </div>
-            </div>
-
-            <div id="featured-image-container" class="px-6 sm:px-8 hidden">
-                <img id="featured-image" src="" alt="" class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg">
-            </div>
-
-            <div class="p-6 sm:p-8">
-                <div class="prose prose-lg max-w-none">
-                    <div id="article-content-text" class="text-gray-700 leading-relaxed whitespace-pre-line text-base sm:text-lg"></div>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-200 p-6 sm:p-8 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="font-medium text-gray-900">
-                            <p id="article-author">Owner: </p>
-                        </div>
-                        <p class="text-sm text-gray-500">Owner</p>
-                    </div>
-                </div>
-            </div>
-        </article>
-
-        <!-- Back button below the venue detail -->
-        <div class="mt-6 text-center">
-            <a href="{% url 'venue:show_venue' %}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                ← Kembali ke Daftar Venue
-            </a>
-        </div>
-
+  <!-- Error State -->
+  <div id="error-state" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+    <div class="w-16 h-16 mx-auto mb-4">
+      <div class="text-red-500 text-5xl">⚠️</div>
     </div>
-</div>
+  <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load venue</h3>
+    <p class="text-gray-500">Please try again later.</p>
+  </div>
+
+  <!-- Product Content (Hidden initially) -->
+  <div id="product-content" class="bg-white rounded-lg shadow-lg overflow-hidden hidden mt-4">
+    <div class="md:flex md:items-stretch">
+      <div class="md:w-1/2">
+        <div id="featured-image-container" class="aspect-square md:aspect-auto w-full overflow-hidden bg-gray-100 hidden md:h-full relative">
+          <!-- Carousel main image -->
+          <img
+            id="featured-image"
+            src=""
+            alt=""
+            class="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
+          />
+
+          <!-- Prev / Next controls -->
+          <button id="carousel-prev" aria-label="Previous image" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 shadow">
+            ‹
+          </button>
+          <button id="carousel-next" aria-label="Next image" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 shadow">
+            ›
+          </button>
+
+          <!-- Thumbnails (horizontal strip) -->
+          <div id="thumbnails" class="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/40 to-transparent p-2 flex gap-2 overflow-x-auto">
+            <!-- thumbnails injected here -->
+          </div>
+        </div>
+        <div id="no-image-placeholder" class="aspect-square md:aspect-auto w-full bg-gray-200 flex items-center justify-center md:h-full">
+          <span class="text-gray-500 text-lg">No Image Available</span>
+        </div>
+      </div>
+
+      <!-- content -->
+      <div class="md:w-1/2 p-6">
+        <h1 id="product-name" class="text-3xl font-bold mb-4"></h1>
+        
+  <!-- Category and Featured badges -->
+        <div id="badges-container" class="mb-4">
+        </div>
+        
+        <!-- Product Info -->
+        <div class="mb-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <h3 class="font-semibold mb-1">Location:</h3>
+              <p id="venue-location" class="text-blue-600 font-bold text-lg"></p>
+            </div>
+            <div>
+              <h3 class="font-semibold mb-1">Contact:</h3>
+              <p id="venue-contact" class="font-semibold"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="venue-created-section" class="mb-4 hidden">
+          <h3 class="font-semibold mb-2">Created:</h3>
+          <div class="flex items-center">
+            <span id="venue-created-text" class="text-gray-600 font-semibold mr-2"></span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-6">
+          <h3 class="font-semibold mb-2">Description:</h3>
+          <p id="venue-description" class="text-gray-700 leading-relaxed">
+          </p>
+        </div>
+
+        <!-- Owner Info -->
+        <div class="mb-6">
+          <h3 class="font-semibold mb-2">Owner:</h3>
+          <p id="venue-owner" class="text-gray-700 leading-relaxed">
+          </p>
+        </div>
+
+        <!-- back to product page -->
+        <div class="flex gap-4">
+          <a
+            href="{% url 'venue:show_venue' %}"
+            class="bg-blue-600 text-white px-4 py-2 rounded-md mb-6 inline-block hover:bg-blue-700 transition-colors"
+          >
+            Back to Venues
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
 
 <script>
 // Configuration
@@ -79,109 +121,211 @@ const VENUE_DETAIL_ENDPOINT = `{% url 'venue:show_json_by_id_venue' '00000000-00
 // DOM Elements
 const loadingState = document.getElementById('loading-state');
 const errorState = document.getElementById('error-state');
-const articleContent = document.getElementById('article-content');
+const productContent = document.getElementById('product-content');
 const badgesContainer = document.getElementById('badges-container');
-const articleTitle = document.getElementById('article-title');
-const articleDate = document.getElementById('article-date');
-const articleViews = document.getElementById('article-views');
+const productName = document.getElementById('product-name');
+// Venue-specific fields
+const venueLocation = document.getElementById('venue-location');
+const venueContact = document.getElementById('venue-contact');
+const venueDescription = document.getElementById('venue-description');
+const venueOwner = document.getElementById('venue-owner');
+const venueCreatedSection = document.getElementById('venue-created-section');
+const venueCreatedText = document.getElementById('venue-created-text');
 const featuredImageContainer = document.getElementById('featured-image-container');
 const featuredImage = document.getElementById('featured-image');
-const articleContentText = document.getElementById('article-content-text');
-const articleAuthor = document.getElementById('article-author');
-// debug output
-const venueDebug = document.createElement('pre');
-venueDebug.id = 'venue-debug';
-venueDebug.className = 'text-xs text-gray-500 mt-4 whitespace-pre-wrap';
-if (articleContent && articleContent.parentNode) articleContent.parentNode.insertBefore(venueDebug, articleContent.nextSibling);
+const noImagePlaceholder = document.getElementById('no-image-placeholder');
+const thumbnailsContainer = document.getElementById('thumbnails');
+const carouselPrev = document.getElementById('carousel-prev');
+const carouselNext = document.getElementById('carousel-next');
 
+// Show/hide page sections
 function showState(state) {
-    if (loadingState) loadingState.classList.toggle('hidden', state !== 'loading');
-    if (errorState) errorState.classList.toggle('hidden', state !== 'error');
-    if (articleContent) articleContent.classList.toggle('hidden', state !== 'ready');
+    loadingState.classList.toggle('hidden', state !== 'loading');
+    errorState.classList.toggle('hidden', state !== 'error');
+    productContent.classList.toggle('hidden', state !== 'ready');
 }
 
-function getCategoryLabel(code) {
-    const map = { concert:'Concert', sports:'Sports', theater:'Theater', conference:'Conference', exhibition:'Exhibition', other:'Other' };
-    return map[code] || code || 'Other';
+// Get readable category name
+function getCategoryLabel(categoryCode) {
+  const categoryMapping = {
+    'running': 'Lari',
+    'badminton': 'Badminton',
+    'futsal': 'Futsal',
+    'football': 'Sepak Bola',
+    'basketball': 'Basket',
+    'cycling': 'Sepeda',
+    'volleyball': 'Voli',
+    'yoga': 'Yoga',
+    'padel': 'Padel',
+    'other': 'Lainnya',
+  };
+  return categoryMapping[categoryCode] || categoryCode;
 }
 
-function renderVenue(v) {
-    // Title
-    if (!v) return;
-    if (articleTitle) articleTitle.textContent = v.name || '';
-    document.title = `${v.name || 'Venue'} - gas.in`;
+// Render product content
+function renderProduct(product) {
+  // Treat `product` as venue payload from API
+  productName.textContent = product.name;
+  document.title = `${product.name} - gas.in`;
 
-    // Badges
-    if (badgesContainer) {
-        badgesContainer.innerHTML = '';
-        const cat = document.createElement('span');
-        cat.className = 'inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-blue-600 text-white';
-        cat.textContent = getCategoryLabel(v.category);
-        badgesContainer.appendChild(cat);
-    }
+  // Set badges
+  badgesContainer.innerHTML = '';
+  const categoryBadge = document.createElement('span');
+  categoryBadge.className = 'bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold mr-2';
+  categoryBadge.textContent = getCategoryLabel(product.category);
+  badgesContainer.appendChild(categoryBadge);
 
-    // Date & views (views not tracked for venues, leave empty)
-    if (articleDate) {
-        articleDate.textContent = v.created_at ? new Date(v.created_at).toLocaleString('id-ID') : '';
-    }
-    if (articleViews) articleViews.textContent = '';
+  // Show acceptance/verification badge if venue is accepted
+  if (product.is_accepted) {
+    const acceptedBadge = document.createElement('span');
+    acceptedBadge.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold';
+    acceptedBadge.textContent = 'Verified';
+    badgesContainer.appendChild(acceptedBadge);
+  }
 
-    // Featured image
+  // Location / contact
+  venueLocation.textContent = product.location || '-';
+  // Render contact as WhatsApp link (clean non-digits)
+  const rawContact = product.contact_number || '';
+  const cleaned = rawContact.replace(/\D/g, '');
+  if (cleaned.length > 0) {
+    // build wa.me link; note: wa.me expects country code, user's number should include it
+    const a = document.createElement('a');
+    a.href = `https://wa.me/${cleaned}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.className = 'text-blue-600 hover:underline';
+    a.textContent = rawContact;
+    venueContact.innerHTML = '';
+    venueContact.appendChild(a);
+  } else {
+    venueContact.textContent = '-';
+  }
+
+  // Description
+  venueDescription.textContent = product.description || 'No description available';
+
+  // Owner (depends on API; try owner_username then owner fields)
+  venueOwner.textContent = product.owner_username || product.owner || 'Unknown';
+
+  // Created date
+  if (product.created_at) {
     try {
-        if (v.thumbnail) {
-            const url = String(v.thumbnail).startsWith('http') ? v.thumbnail : (window.location.origin + v.thumbnail);
-            featuredImage.src = url;
-            featuredImage.alt = v.name || '';
-            featuredImageContainer.classList.remove('hidden');
-        } else if (featuredImageContainer) {
-            featuredImageContainer.classList.add('hidden');
-        }
+      const created = new Date(product.created_at);
+      venueCreatedText.textContent = created.toLocaleDateString();
+      venueCreatedSection.classList.remove('hidden');
     } catch (e) {
-        console.warn('Error setting thumbnail', e);
+      venueCreatedSection.classList.add('hidden');
+    }
+  } else {
+    venueCreatedSection.classList.add('hidden');
+  }
+
+  // carousel from images arrayand include thumbnail
+  const rawImgs = (product.images && product.images.length) ? product.images.slice() : [];
+  let imgs = rawImgs.map(item => {
+    if (!item) return '';
+    if (typeof item === 'string') return item;
+    if (typeof item === 'object') return item.image || item.url || '';
+    return '';
+  }).filter(Boolean);
+
+  if (product.thumbnail) {
+    // insert thumbnail at the beginning if not already present
+    if (!imgs.includes(product.thumbnail)) {
+      imgs.unshift(product.thumbnail);
+    }
+  }
+
+  const seen = new Set();
+  imgs = imgs.filter(url => {
+    if (!url) return false;
+    if (seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
+
+  if (!imgs || imgs.length === 0) {
+    featuredImageContainer.classList.add('hidden');
+    noImagePlaceholder.classList.remove('hidden');
+    // clear thumbnails
+    if (thumbnailsContainer) thumbnailsContainer.innerHTML = '';
+  } else {
+    featuredImageContainer.classList.remove('hidden');
+    noImagePlaceholder.classList.add('hidden');
+
+    // ensure safe strings
+  const safeImgs = imgs.map(i => i || '').filter(Boolean);
+
+    // current index state
+    let currentIndex = 0;
+
+    function updateFeatured(index) {
+      currentIndex = (index + safeImgs.length) % safeImgs.length;
+      featuredImage.src = safeImgs[currentIndex];
+      featuredImage.alt = `${product.name} (${currentIndex + 1}/${safeImgs.length})`;
+      // update active thumbnail
+      if (thumbnailsContainer) {
+        const thumbs = thumbnailsContainer.querySelectorAll('[data-idx]');
+        thumbs.forEach(t => t.classList.remove('ring-2', 'ring-white'));
+        const active = thumbnailsContainer.querySelector(`[data-idx='${currentIndex}']`);
+        if (active) active.classList.add('ring-2', 'ring-white');
+      }
     }
 
-    // Content
-    if (articleContentText) articleContentText.innerHTML = DOMPurify.sanitize(v.description || '');
+    // render thumbnails
+    if (thumbnailsContainer) {
+      thumbnailsContainer.innerHTML = '';
+      safeImgs.forEach((imgUrl, idx) => {
+        const t = document.createElement('img');
+        t.src = imgUrl;
+        t.alt = `${product.name} thumbnail ${idx + 1}`;
+        t.dataset.idx = idx;
+        t.className = 'w-20 h-14 object-cover rounded cursor-pointer opacity-90 hover:opacity-100 border-2 border-transparent';
+        t.addEventListener('click', () => updateFeatured(idx));
+        thumbnailsContainer.appendChild(t);
+      });
+    }
 
-    // Owner
-    if (articleAuthor) articleAuthor.textContent = `Owner ID: ${v.owner_id || ''}`;
+    // wire prev/next
+    if (carouselPrev) {
+      carouselPrev.onclick = () => updateFeatured(currentIndex - 1);
+    }
+    if (carouselNext) {
+      carouselNext.onclick = () => updateFeatured(currentIndex + 1);
+    }
+
+    // initialize
+    updateFeatured(0);
+  }
 }
 
-async function loadVenueDetail() {
+// Fetch product detail
+async function loadProductDetail() {
     try {
         showState('loading');
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-        const resp = await fetch(VENUE_DETAIL_ENDPOINT, { signal: controller.signal, credentials: 'same-origin' });
-        clearTimeout(timeout);
-        if (!resp.ok) throw new Error('Server returned ' + resp.status);
-        let data = null;
-        try {
-            data = await resp.json();
-        } catch (e) {
-            throw new Error('Invalid JSON from server');
+
+    const response = await fetch(VENUE_DETAIL_ENDPOINT, {
+            headers: { 'Accept': 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch product detail');
         }
 
-        // API may return either the object itself or {"detail":...,} or similar.
-        // Our endpoint returns the object directly; but be defensive.
-        let venueObj = null;
-        if (data && typeof data === 'object') {
-            if (data.data) venueObj = data.data;
-            else venueObj = data;
-        }
-
-        // debug dump
-        if (venueDebug) venueDebug.textContent = JSON.stringify(venueObj, null, 2);
-
-        renderVenue(venueObj);
+        const productData = await response.json();
+        renderProduct(productData);
         showState('ready');
-    } catch (err) {
-        console.error('Error loading venue detail:', err);
+    } catch (error) {
+        console.error('Error loading product detail:', error);
         showState('error');
     }
 }
 
-document.addEventListener('DOMContentLoaded', loadVenueDetail);
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadProductDetail();
+});
 </script>
 
 {% endblock content %}
