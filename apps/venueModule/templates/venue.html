@@ -135,7 +135,7 @@ function buildVenueCardElement(item) {
           </h3>
           <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-3">${location}</p>
           <div class="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
-            <a href="${linkDetail}" class="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors">View</a>
+            <a href="${linkDetail}" onclick="showToast('Venue loaded', 'Detail loaded successfully', 'success');" class="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors">View</a>
           </div>
         </div>
     `;
