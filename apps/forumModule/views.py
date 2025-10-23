@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 
 def is_dummy_user(username):
-    """Cek apakah username termasuk dummy user di users.json"""
     import json, os
     from django.conf import settings
 
@@ -56,6 +55,8 @@ def show_post(request, post_id):
         uuid.UUID(post_id)
         post = get_object_or_404(Post, pk=post_id)
         is_real_user = True
+
+        post.increment_views()
 
         if request.user.is_authenticated and post.owner == request.user:
             is_owner = True
@@ -170,7 +171,6 @@ def toggle_like(request, post_id):
 
 @login_required
 def check_user_liked(request, post_id):
-    """Check if current user has liked this post"""
     try:
         post = get_object_or_404(Post, pk=post_id)
         liked = request.user in post.likes.all()
