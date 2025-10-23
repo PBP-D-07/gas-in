@@ -23,8 +23,7 @@
                     </span>
                 </div>
 
-                <div id="post-thumbnail-container" class="hidden mb-4">
-                    <img id="post-thumbnail" class="w-full h-64 sm:h-80 object-cover rounded-lg" alt="Post thumbnail">
+                <div id="post-thumbnail-container" class="mb-4">
                 </div>
 
                 <div id="post-content" class="text-gray-800 leading-relaxed whitespace-pre-line text-base mb-4">
@@ -35,7 +34,7 @@
                     <span>Loading...</span>
                 </div>
 
-                <!-- TAMBAHAN: Action Bar (Like & Comment) -->
+                <!-- Action Bar (Like & Comment) -->
                 <div class="border-t border-gray-200 pt-3 mb-4">
                     <div class="flex items-center gap-6 text-gray-600">
                         <button id="like-button" onclick="toggleLike()" class="flex items-center gap-1 hover:text-pink-600">
@@ -73,14 +72,14 @@
             </div>
         </article>
 
-        <!-- TAMBAHAN: Comment Section -->
+        <!-- Comment Section -->
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm mt-4 overflow-hidden">
             {% if user.is_authenticated %}
             <div class="p-4 border-b border-gray-200">
                 <form id="comment-form">
                     {% csrf_token %}
                     <textarea id="comment-input" placeholder="Write a comment..." rows="2" class="w-full border rounded-lg px-3 py-2 mb-2"></textarea>
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">Comment</button>
+                    <button id="comment-submit-btn" type="submit" class="px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">Comment</button>
                 </form>
             </div>
             {% else %}
@@ -130,8 +129,9 @@
 <script>
 const postId = "{{ post_id }}";
 const isAuthenticated = "{{ user.is_authenticated }}" === "True";
+const currentUsername = "{{ user.username }}";
 
-// TAMBAHAN: Helper function
+// Helper function
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
@@ -147,7 +147,7 @@ function getCookie(name) {
   return cookieValue;
 }
 
-// TAMBAHAN: Toggle Like
+// Toggle Like
 window.toggleLike = async function() {
   if (!isAuthenticated) {
     alert("Please login to like posts!");
@@ -173,35 +173,45 @@ window.toggleLike = async function() {
   }
 };
 
-// TAMBAHAN: Load Comments
-async function loadComments() {
+// RENDER HELPERS
+function renderCommentsToContainer(comments) {
+  const container = document.getElementById('comments-container');
+  document.getElementById('comment-count').textContent = comments.length;
+  if (!comments || comments.length === 0) {
+    container.innerHTML = '<p class="p-4 text-center text-gray-500 text-sm">No comments yet</p>';
+    return;
+  }
+  container.innerHTML = comments.map(c => {
+    const isYou = c.user === currentUsername;
+    const date = new Date(c.created_at).toLocaleString();
+    return `
+      <div class="p-4">
+        <p class="font-semibold text-sm">${c.user}${isYou ? " (You)" : ""}</p>
+        <p class="text-gray-700 text-sm mt-1">${c.content}</p>
+        <p class="text-xs text-gray-500 mt-1">${date}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadCommentsFromDB() {
   try {
     const response = await fetch(`/forum/comment/${postId}/`);
-    const comments = await response.json();
-    
-    const container = document.getElementById('comments-container');
-    document.getElementById('comment-count').textContent = comments.length;
-    
-    if (comments.length === 0) {
-      container.innerHTML = '<p class="p-4 text-center text-gray-500 text-sm">No comments yet</p>';
-      return;
+    if (!response.ok) {
+      return [];
     }
-    
-    container.innerHTML = comments.map(c => `
-      <div class="p-4">
-        <p class="font-semibold text-sm">${c.user}</p>
-        <p class="text-gray-700 text-sm mt-1">${c.content}</p>
-        <p class="text-xs text-gray-500 mt-1">${c.created_at}</p>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error("Error:", error);
+    const comments = await response.json();
+    return comments || [];
+  } catch (err) {
+    console.warn("Failed to fetch DB comments:", err);
+    return [];
   }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   const url = `/forum/json/${postId}/`;
-
+  let isDummy = false; // true jika post berasal dari forum.json (file)
+  let fileComments = [];
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Post not found");
@@ -221,70 +231,89 @@ document.addEventListener("DOMContentLoaded", async () => {
           hour: 'numeric', minute: '2-digit', hour12: true 
         })}
       </time>
-      <span>${data.post_views} views</span>
+      <span>${data.post_views || 0} views</span>
     `;
 
     document.getElementById("post-content").textContent = data.description || "(No content)";
 
-    // TAMBAHAN: Set like count
+    // like count
     document.getElementById('like-count').textContent = data.like_count || 0;
 
+    const thumbContainer = document.getElementById("post-thumbnail-container");
     if (data.thumbnail) {
-      const thumbContainer = document.getElementById("post-thumbnail-container");
-      const thumb = document.getElementById("post-thumbnail");
-      thumb.src = data.thumbnail;
-      thumb.alt = data.category || "Post image";
-      thumbContainer.classList.remove("hidden");
+    thumbContainer.innerHTML = `
+        <img src="${data.thumbnail}" 
+            class="w-full h-64 sm:h-80 object-cover rounded-lg" 
+            alt="${data.category || 'Post image'}"
+            onerror="this.parentElement.innerHTML=''">
+    `;
+    } else {
+    thumbContainer.innerHTML = ''; 
     }
 
     document.getElementById("post-author").innerHTML = `<p class="font-medium">Author: ${data.owner_username || "Anonymous"}</p>`;
 
-    // Modal handling
+    if (Array.isArray(data.comments)) {
+      isDummy = true;
+      fileComments = data.comments;
+    }
+
+    if (isDummy) {
+      const commentFormDiv = document.getElementById('comment-input')?.closest('form');
+      if (commentFormDiv) {
+        commentFormDiv.querySelector('textarea').setAttribute('disabled', 'disabled');
+        const btn = commentFormDiv.querySelector('button[type="submit"]');
+        if (btn) {
+          btn.setAttribute('disabled', 'disabled');
+          btn.textContent = 'Comment (read-only)';
+        }
+      }
+      renderCommentsToContainer(fileComments);
+    } else {
+      const dbComments = await loadCommentsFromDB();
+      renderCommentsToContainer(dbComments);
+    }
+
+    // Modal handling (edit)
     const modal = document.getElementById("editModal");
     const openModal = document.getElementById("openEditModal");
     const closeModal = document.getElementById("closeEditModal");
     const cancelEdit = document.getElementById("cancelEdit");
     const form = document.getElementById("editForm");
 
-    if (!openModal || !closeModal || !cancelEdit || !form) {
-        console.warn("Edit modal elements not found — skipping event binding");
-        return;
-    }
-    
-    openModal.addEventListener("click", () => {
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-        document.getElementById("editCategory").value = data.category || "";
-        document.getElementById("editDescription").value = data.description || "";
-        document.getElementById("editThumbnail").value = data.thumbnail || "";
-    });
-
-    const close = () => modal.classList.add("hidden");
-    closeModal.addEventListener("click", close);
-    cancelEdit.addEventListener("click", close);
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const csrfToken = "{{ csrf_token }}";
-
-      const res = await fetch(`/forum/edit/${postId}/`, {
-        method: "POST",
-        headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
-        body: formData,
+    if (openModal && closeModal && cancelEdit && form) {
+      openModal.addEventListener("click", () => {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+          document.getElementById("editCategory").value = data.category || "";
+          document.getElementById("editDescription").value = data.description || "";
+          document.getElementById("editThumbnail").value = data.thumbnail || "";
       });
 
-      const result = await res.json();
-      if (res.ok) {
-        alert("Post updated successfully!");
-        location.reload();
-      } else {
-        alert("Error: " + JSON.stringify(result.error));
-      }
-    });
+      const close = () => modal.classList.add("hidden");
+      closeModal.addEventListener("click", close);
+      cancelEdit.addEventListener("click", close);
 
-    // TAMBAHAN: Load comments
-    await loadComments();
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const csrfToken = "{{ csrf_token }}";
+
+        const res = await fetch(`/forum/edit/${postId}/`, {
+          method: "POST",
+          headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
+          body: formData,
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert("Post updated successfully!");
+          location.reload();
+        } else {
+          alert("Error: " + JSON.stringify(result.error));
+        }
+      });
+    }
 
   } catch (err) {
     document.getElementById("post-detail").innerHTML = `
@@ -293,14 +322,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>`;
   }
 
-  // TAMBAHAN: Comment form handler
   const commentForm = document.getElementById('comment-form');
   if (commentForm) {
     commentForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const input = document.getElementById('comment-input');
-      const content = input.value.trim();
-      
+      const textarea = document.getElementById('comment-input');
+      if (!textarea || textarea.disabled) return;
+
+      const content = textarea.value.trim();
       if (!content) return alert("Comment cannot be empty!");
 
       try {
@@ -315,14 +344,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (response.ok) {
-          input.value = "";
-          await loadComments();
+          textarea.value = "";
+          const dbComments = await loadCommentsFromDB();
+          renderCommentsToContainer(dbComments);
+        } else {
+          const err = await response.json().catch(()=>({error:'Unknown'}));
+          alert("Failed to send comment: " + (err.error || JSON.stringify(err)));
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error adding comment:", error);
       }
     });
   }
 });
 </script>
+
 {% endblock content %}

@@ -10,6 +10,20 @@ from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 
+def is_dummy_user(username):
+    """Cek apakah username termasuk dummy user di users.json"""
+    import json, os
+    from django.conf import settings
+
+    try:
+        users_path = os.path.join(settings.BASE_DIR, 'data', 'users.json')
+        with open(users_path, 'r', encoding='utf-8') as f:
+            users = json.load(f)
+            dummy_usernames = [u['username'] for u in users]
+            return username in dummy_usernames
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
+
 
 def show_main(request):
     filter_type = request.GET.get("filter", "all")
@@ -19,9 +33,16 @@ def show_main(request):
     else:
         post_list = Post.objects.filter(owner=request.user).order_by('-created_at')
 
+    posts_with_flag = []
+    for post in post_list:
+        posts_with_flag.append({
+            'instance': post,
+            'is_real_user': True,
+        })
+
     context = {
         'name': request.user.username if request.user.is_authenticated else 'Guest',
-        'post_list': post_list,
+        'post_list': posts_with_flag,
     }
 
     return render(request, "forumMain.html", context)
@@ -29,10 +50,12 @@ def show_main(request):
 def show_post(request, post_id):
     post = None
     is_owner = False  
+    is_real_user = False
 
     try:
         uuid.UUID(post_id)
         post = get_object_or_404(Post, pk=post_id)
+        is_real_user = True
 
         if request.user.is_authenticated and post.owner == request.user:
             is_owner = True
@@ -45,6 +68,8 @@ def show_post(request, post_id):
                 for item in data:
                     if str(item.get('id')) == post_id:
                         post = item
+                        owner_username = item.get("owner_username", None)
+                        is_real_user = owner_username is not None and not is_dummy_user(owner_username)
                         break
         except FileNotFoundError:
             pass
@@ -56,6 +81,7 @@ def show_post(request, post_id):
         'post': post if isinstance(post, Post) else None,
         'json_post': post if isinstance(post, dict) else None,
         'is_owner': is_owner, 
+        'is_real_user': is_real_user, 
     }
 
     post_id_value = None
@@ -67,6 +93,7 @@ def show_post(request, post_id):
     context["post_id"] = post_id_value
 
     return render(request, 'post_detail.html', context)
+
 
 
 @login_required
@@ -103,13 +130,11 @@ def edit_post(request, id):
     if form.is_valid():
         form.save()
 
-        # Kalau request dari fetch() (AJAX)
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"message": "Post updated successfully"})
         
         return redirect("forumModule:show_main")
     
-    # Kalau form invalid
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({"error": form.errors}, status=400)
 
@@ -183,19 +208,40 @@ def add_comment(request, post_id):
     })
 
 def get_comments(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    comments = post.comments.select_related("author").order_by("-created_at")
+    is_uuid = True
+    try:
+        uuid.UUID(post_id)
+    except ValueError:
+        is_uuid = False
 
-    data = [
-        {
-            "user": comment.author.username,
-            "content": comment.content,
-            "created_at": comment.created_at.strftime("%Y-%m-%d %H:%M"),
-        }
-        for comment in comments
-    ]
+    if is_uuid:
+        try:
+            post = Post.objects.get(pk=post_id)
+            comments = post.comments.select_related("author").order_by("-created_at")
+            data = [
+                {
+                    "user": comment.author.username,
+                    "content": comment.content,
+                    "created_at": comment.created_at.isoformat(),
+                }
+                for comment in comments
+            ]
+            return JsonResponse(data, safe=False)
+        except Post.DoesNotExist:
+            raise Http404("Post not found")
 
-    return JsonResponse(data, safe=False)
+    # kalau bukan UUID, ambil dari JSON dummy
+    file_path = os.path.join(settings.BASE_DIR, "data", "forum.json")
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            posts = json.load(f)
+            for item in posts:
+                if str(item.get("id")) == str(post_id):
+                    return JsonResponse(item.get("comments", []), safe=False)
+    except FileNotFoundError:
+        pass
+
+    raise Http404("Post not found")
 
 
 def show_json(request):
@@ -212,6 +258,7 @@ def show_json(request):
             'created_at': post.created_at.isoformat() if post.created_at else None,
             'owner_id': post.owner.id if post.owner else None,
             'owner_username': post.owner.username if post.owner else None,
+            'is_real_user': True, 
         }
         for post in posts
     ]
@@ -222,17 +269,18 @@ def show_json(request):
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             file_data = json.load(f)
+            for item in file_data:
+                owner_username = item.get("owner_username")
+                item["is_real_user"] = owner_username is not None and not is_dummy_user(owner_username)
     except FileNotFoundError:
         file_data = []
     except json.JSONDecodeError:
         file_data = []
 
-    combined_data = {
-        'from_database': db_data,
-        'from_file': file_data,
-    }
     combined_data = db_data + file_data
+
     return JsonResponse(combined_data, safe=False)
+
 
 def show_json_by_id(request, post_id):
     post = None
@@ -259,6 +307,7 @@ def show_json_by_id(request, post_id):
                 "created_at": post.created_at.isoformat() if post.created_at else None,
                 "owner_id": post.owner.id if post.owner else None,
                 "owner_username": post.owner.username if post.owner else None,
+                "is_real_user": True, 
             }
             return JsonResponse(data)
     except Exception:
@@ -270,6 +319,8 @@ def show_json_by_id(request, post_id):
             data = json.load(f)
             for item in data:
                 if str(item.get('id')) == str(post_id):
+                    owner_username = item.get("owner_username")
+                    item["is_real_user"] = owner_username is not None and not is_dummy_user(owner_username)
                     return JsonResponse(item)
     except FileNotFoundError:
         pass

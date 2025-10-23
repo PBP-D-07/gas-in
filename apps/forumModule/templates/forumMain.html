@@ -145,7 +145,6 @@
     const filterMyBtn = document.getElementById('filter-my');
     const userId = "{{ user.id }}";
 
-    // EDIT POST FUNCTIONALITY
     const editModal = document.getElementById("editPostModal");
     const closeEditBtn = document.getElementById("closeEditPostModal");
     const cancelEditBtn = document.getElementById("cancelEditPost");
@@ -173,7 +172,6 @@
     closeEditBtn.addEventListener("click", () => editModal.classList.add("hidden"));
     cancelEditBtn.addEventListener("click", () => editModal.classList.add("hidden"));
 
-    // Handle submit edit
     editForm.addEventListener("submit", async function(e) {
       e.preventDefault();
       const formData = new FormData(editForm);
@@ -280,7 +278,6 @@
       }
     }
 
-    // Delete post function
     window.deletePost = async function(postId) {
       if (!confirm('Are you sure you want to delete this post?')) return;
 
@@ -320,14 +317,12 @@
           const data = await response.json();
           console.log("Like toggled:", data);
           
-          // Update button langsung tanpa reload semua posts
           const likeBtn = document.getElementById(`like-btn-${postId}`);
           if (likeBtn) {
             likeBtn.innerHTML = data.liked 
               ? `❤️ ${data.like_count}` 
               : `🤍 ${data.like_count}`;
             
-            // Ganti warna button
             if (data.liked) {
               likeBtn.classList.remove('bg-pink-500');
               likeBtn.classList.add('bg-pink-600');
@@ -408,7 +403,6 @@
       });
     }
 
-    // Filter handlers
     filterAllBtn.addEventListener("click", (e) => {
       e.preventDefault();
       filterAllBtn.classList.add('bg-green-600', 'text-white');
@@ -431,7 +425,6 @@
       });
     }
     loadPosts();
-    // ==== COMMENT SYSTEM ====
     const commentModal = document.getElementById("commentModal");
     const closeCommentModal = document.getElementById("closeCommentModal");
     const commentsList = document.getElementById("commentsList");
@@ -448,51 +441,50 @@
     closeCommentModal.addEventListener("click", () => commentModal.classList.add("hidden"));
 
     async function loadComments(postId) {
-      // Tampilkan loading dulu
       commentsList.innerHTML = "<p class='text-gray-400 text-center'>Loading comments...</p>";
+
+      let comments = [];
 
       try {
         const response = await fetch(`/forum/comment/${postId}/`);
-        
-        if (!response.ok) throw new Error("Failed to fetch comments");
-
-        const comments = await response.json();
-        console.log("Comments fetched:", comments); // Debugging
-
-        // Kosongkan dulu list
-        commentsList.innerHTML = "";
-
-        if (!comments || comments.length === 0) {
-          commentsList.innerHTML = "<p class='text-gray-500 text-center'>No comments yet.</p>";
-          return;
+        if (response.ok) {
+          comments = await response.json();
         }
+      } catch (err) {
+        console.warn("No backend comments, maybe dummy post:", err);
+      }
 
-        // Loop semua komentar dan append
-        comments.forEach(c => {
-          const cDiv = document.createElement("div");
-          cDiv.className = "border rounded-md p-2 bg-white";
+      const dummyPost = postsContainer.querySelector(`[data-post-id='${postId}']`);
+      if (!comments.length && window.allPosts) {
+        const postObj = window.allPosts.find(p => String(p.id) === String(postId));
+        if (postObj && postObj.comments) comments = postObj.comments;
+      }
 
-          // Format tanggal lebih rapi
-          const date = new Date(c.created_at).toLocaleString('id-ID', { 
-            year: 'numeric', month: 'short', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          });
+      commentsList.innerHTML = "";
 
-          cDiv.innerHTML = `
-            <p class="font-semibold">${c.user}</p>
-            <p class="text-gray-700">${c.content}</p>
-            <p class="text-gray-400 text-xs">${date}</p>
-          `;
+      if (!comments || comments.length === 0) {
+        commentsList.innerHTML = "<p class='text-gray-500 text-center'>No comments yet.</p>";
+        return;
+      }
 
-          commentsList.appendChild(cDiv);
+      comments.forEach(c => {
+        const cDiv = document.createElement("div");
+        cDiv.className = "border rounded-md p-2 bg-white";
+
+        const date = new Date(c.created_at).toLocaleString('id-ID', { 
+          year: 'numeric', month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit'
         });
 
-      } catch (err) {
-        console.error("Error loading comments:", err);
-        commentsList.innerHTML = "<p class='text-red-500 text-center'>Failed to load comments.</p>";
-      }
-    }
+        cDiv.innerHTML = `
+          <p class="font-semibold">${c.user}</p>
+          <p class="text-gray-700">${c.content}</p>
+          <p class="text-gray-400 text-xs">${date}</p>
+        `;
 
+        commentsList.appendChild(cDiv);
+      });
+    }
 
     if (commentForm) {
       commentForm.addEventListener("submit", async (e) => {
@@ -611,7 +603,6 @@
     color: #1da1f2;
   }
 
-  /* Filter + Modal tweaks */
   #filter-all, #filter-my {
     border-radius: 9999px;
     padding: 6px 14px;
