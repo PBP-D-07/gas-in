@@ -9,5 +9,5 @@ urlpatterns = [
     path('api/login/', login_user, name='login'),
     path('api/logout/', logout_user, name='logout'),
     path('login/', show_login, name='show_login'),
-    path('users/', get_all_user, name='get_all_user'),
+    path('users/', get_all_user, name='get_all_user')
 ]
