@@ -4,7 +4,7 @@
   class="relative min-h-screen pt-30 flex items-center justify-center w-full"
 >
   <div class="w-80 p-10 border-2 border-gray-200 rounded-lg">
-    <form id="login-form" method="POST" action="{% url 'main:login' %}">
+    <form id="register-form" method="POST" action="{% url 'main:register' %}">
       {% csrf_token %}
       <div class="flex flex-col w-full gap-4">
         <div>
@@ -26,14 +26,14 @@
 
         <div>
           <label
-            for="password"
+            for="password1"
             class="block text-sm font-medium text-gray-700 mb-2"
           >
             Password
           </label>
           <input
-            id="password"
-            name="password"
+            id="password1"
+            name="password1"
             type="password"
             required
             class="w-full border px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-red-200 transition-all"
@@ -41,18 +41,42 @@
           />
         </div>
 
+        <div>
+          <label
+            for="password2"
+            class="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Confirm Password
+          </label>
+          <input
+            id="password2"
+            name="password2"
+            type="password"
+            required
+            class="w-full border px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-red-200 transition-all"
+            placeholder="Confirm your password"
+          />
+        </div>
+
         <button
           type="submit"
           class="w-full bg-gray-200 px-2 py-1 font-medium rounded-lg hover:brightness-90 transition-all"
         >
-          Sign In
+          Sign Up
         </button>
+
+        <div class="text-center text-sm text-gray-600">
+          Already have an account?
+          <a href="{% url 'main:login' %}" class="text-red-500 hover:underline">
+            Login here
+          </a>
+        </div>
       </div>
     </form>
   </div>
 </div>
 <script>
-  const form = document.getElementById("login-form");
+  const form = document.getElementById("register-form");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -60,7 +84,7 @@
     const data = new FormData(form);
 
     try {
-      const response = await fetch("/api/login/", {
+      const response = await fetch("/api/register/", {
         method: "POST",
         body: data,
       });
@@ -69,12 +93,12 @@
 
       if (!response.ok) {
         showToast(result.message, "", "error");
-        return;  // ← TAMBAHKAN INI supaya stop di sini kalau error
+        return;
       }
 
       showToast(result.message, "", "success");
       setTimeout(() => {
-        window.location.href = result.redirect_url || "/";  // ← UBAH INI pakai redirect_url dari backend
+        window.location.href = "/login/";
       }, 1500);
     } catch (error) {
       console.error("Error:", error);

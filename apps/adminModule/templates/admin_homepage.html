@@ -202,6 +202,180 @@
     </div>
 </div>
 
+<!-- User Management Section -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">👥 User Management</h4>
+        <small>Promote or demote users to/from admin role</small>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Promote User Form -->
+            <div class="col-md-6">
+                <h5>Promote User to Admin</h5>
+                <form id="promote-form" class="mb-3">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            class="form-control" 
+                            placeholder="Enter username"
+                            required
+                        >
+                        <button type="submit" class="btn btn-success">
+                            ⬆️ Promote
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Demote Admin Form -->
+            <div class="col-md-6">
+                <h5>Demote Admin to User</h5>
+                <form id="demote-form" class="mb-3">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            class="form-control" 
+                            placeholder="Enter username"
+                            required
+                        >
+                        <button type="submit" class="btn btn-warning">
+                            ⬇️ Demote
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- All Users Table -->
+        <h5 class="mt-4">All Users</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- Will be populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Promote User
+$('#promote-form').on('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/api/promote-admin/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(result.message);
+            this.reset();
+            loadUsers(); // Refresh user list
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to promote user');
+    }
+});
+
+// Demote Admin
+$('#demote-form').on('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/api/demote-admin/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(result.message);
+            this.reset();
+            loadUsers(); // Refresh user list
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to demote user');
+    }
+});
+
+// Load All Users
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/users/');
+        const result = await response.json();
+        
+        const tbody = $('#users-table-body');
+        tbody.empty();
+        
+        result.data.forEach(user => {
+            const roleClass = user.is_admin ? 'bg-danger' : 'bg-secondary';
+            const roleText = user.is_admin ? 'Admin' : 'User';
+            const date = new Date(user.created_at).toLocaleDateString();
+            
+            const actionBtn = user.is_admin 
+                ? `<button class="btn btn-sm btn-warning demote-user-btn" data-username="${user.username}">Demote</button>`
+                : `<button class="btn btn-sm btn-success promote-user-btn" data-username="${user.username}">Promote</button>`;
+            
+            tbody.append(`
+                <tr>
+                    <td>${user.username}</td>
+                    <td><span class="badge ${roleClass}">${roleText}</span></td>
+                    <td>${date}</td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `);
+        });
+        
+        // Quick promote/demote from table
+        $('.promote-user-btn').on('click', function() {
+            const username = $(this).data('username');
+            $('#promote-form input[name="username"]').val(username);
+            $('#promote-form').submit();
+        });
+        
+        $('.demote-user-btn').on('click', function() {
+            const username = $(this).data('username');
+            $('#demote-form input[name="username"]').val(username);
+            $('#demote-form').submit();
+        });
+        
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+// Load users on page load
+$(document).ready(function() {
+    loadUsers();
+});
+</script>
+
 <!-- Modal Konfirmasi Approve -->
 <div class="modal fade" id="approveModal" tabindex="-1">
     <div class="modal-dialog">
