@@ -32,33 +32,6 @@ def venue_detail(request, venue_id):
 
     return render(request, "venue_detail.html", context)
 
-@require_POST
-def add_venue_entry_ajax(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'detail': 'Authentication required'}, status=401)
-
-    name = strip_tags(request.POST.get('name', '')).strip()
-    if not name:
-        return JsonResponse({'detail': 'Name is required'}, status=400)
-
-    description = strip_tags(request.POST.get('description', '')).strip() or None
-    location = strip_tags(request.POST.get('location', '')).strip() or 'Unknown'
-    thumbnail = request.POST.get('thumbnail', '').strip() or None
-    category = (request.POST.get('category') or 'other').strip().lower()
-    is_accepted = request.POST.get('is_accepted') in ['1', 'true', 'on', 'yes']
-
-    venue = Venue.objects.create(
-        name=name,
-        description=description,
-        location=location,
-        thumbnail=thumbnail,
-        category=category,
-        is_accepted=is_accepted,
-        owner=request.user,
-    )
-
-    return JsonResponse({'id': str(venue.id), 'name': venue.name}, status=201)
-
 
 
 

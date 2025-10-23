@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import show_venue, venue_detail, show_json_venue, show_xml_venue, show_json_by_id_venue, show_xml_by_id_venue, add_venue_entry_ajax
+from .views import show_venue, venue_detail, show_json_venue, show_xml_venue, show_json_by_id_venue, show_xml_by_id_venue
 
 app_name = 'venue'
 
@@ -10,5 +10,4 @@ urlpatterns = [
 	path('<uuid:venue_id>/', venue_detail, name='venue_detail'),
 	path('api/json/<uuid:venue_id>/', show_json_by_id_venue, name='show_json_by_id_venue'),
 	path('api/xml/<uuid:venue_id>/', show_xml_by_id_venue, name='show_xml_by_id_venue'),
-	path('add-ajax/', add_venue_entry_ajax, name='add_venue_entry_ajax'),
 ]
