@@ -1,23 +1,50 @@
 {% extends 'base.html' %}
 {% block content %}
-<p><a href="{% url 'main:show_main' %}"><button>← Back to Post List</button></a></p>
-
-<h1>{{ post.title }}</h1>
-
 <p>
-  <b>{{ post.get_category_display }}</b>
-  {% if post.is_featured %} | <b>Featured</b>{% endif %}
-  {% if post.is_post_hot %} | <b>Hot</b>{% endif %}
-  | <i>{{ post.created_at|date:"d M Y, H:i" }}</i>
-  | Views: {{ post.views }}
+  <a href="{% url 'main:show_main' %}">
+    <button>← Back to Post List</button>
+  </a>
 </p>
 
-<p>{{ post.content }}</p>
+<div id="post-detail">
+  <h1 id="post-title">Loading...</h1>
 
-{% if post.user %}
-    <p>Author: {{ post.user.username }}</p>
-{% else %}
-    <p>Author: Anonymous</p>
-{% endif %}
+  <p id="post-meta">
+    <i>Loading details...</i>
+  </p>
+
+  <p id="post-content"></p>
+  <p id="post-author"></p>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const postId = "{{ post_id }}"; 
+    const url = `/forumModule/json/${postId}/`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Post not found");
+
+      const data = await response.json();
+
+      document.getElementById("post-title").textContent = data.title;
+      document.getElementById("post-content").textContent = data.content;
+
+      const meta = [];
+      if (data.is_post_hot) meta.push("🔥 Hot");
+      meta.push(`Created: ${new Date(data.created_at).toLocaleString()}`);
+      meta.push(`Views: ${data.post_views}`);
+      document.getElementById("post-meta").innerHTML = meta.join(" | ");
+
+      document.getElementById("post-author").innerHTML =
+        `<b>Author:</b> ${data.author_username || "Anonymous"}`;
+
+    } catch (err) {
+      document.getElementById("post-detail").innerHTML =
+        `<p style="color:red;">Error loading post: ${err.message}</p>`;
+    }
+  });
+</script>
 
 {% endblock content %}

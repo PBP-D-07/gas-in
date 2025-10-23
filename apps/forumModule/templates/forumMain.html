@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>gas.in | Forum</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10">
+  <div class="flex flex-col gap-2">
+    <h2 class="text-3xl max-md:text-2xl max-md:text-center font-bold">
+      Community Forum
+    </h2>
+    <p class="text-gray-500 max-md:text-center">Share your thoughts with the community</p>
+  </div>
+
+  <div class="flex gap-3">
+    <button id="openCreatePostModal" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">
+      + Add Post
+    </button>    
+    
+    <button id="filter-all" type="button" class="rounded-lg bg-gray-200 text-lg px-4 py-2">
+      All Posts
+    </button>
+    
+    <button id="filter-my" type="button" class="rounded-lg bg-gray-200 text-lg px-4 py-2">
+      My Posts
+    </button>
+  </div>
+
+  <div id="createPostModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+      <button id="closeCreatePostModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">✕</button>
+      <h2 class="text-xl font-semibold mb-4">Create New Post</h2>
+
+      <form id="createPostForm" method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <input type="text" name="title" class="w-full border rounded-lg px-3 py-2" required>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+          <textarea name="content" class="w-full border rounded-lg px-3 py-2 h-32" required></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" id="cancelCreatePost" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Publish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <hr class="border-gray-300">
+
+  <div id="posts-container" class="flex flex-col gap-6">
+    <p class="text-center text-gray-500">Loading posts...</p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const postsContainer = document.getElementById('posts-container');
+    const filterAllBtn = document.getElementById('filter-all');
+    const filterMyBtn = document.getElementById('filter-my');
+    const userId = "{{ user.id }}";
+
+    async function loadPosts(filter = "all") {
+      try {
+        const response = await fetch("{% url 'forumModule:show_json' %}");
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+        
+        const posts = await response.json();
+        console.log('Posts loaded:', posts); 
+        
+        postsContainer.innerHTML = "";
+
+        const filteredPosts = filter === "my"
+          ? posts.filter(p => String(p.user_id) === String(userId))
+          : posts;
+
+        if (filteredPosts.length === 0) {
+          postsContainer.innerHTML = '<p class="text-center text-gray-500">Belum ada postingan di forum komunitas.</p>';
+          return;
+        }
+
+        filteredPosts.forEach(post => {
+          const postElement = document.createElement("div");
+          postElement.className = "p-6 border-2 border-gray-300 rounded-lg";
+          
+          postElement.innerHTML = `
+            <h2 class="text-2xl font-bold mb-2">
+              <a href="/forum/${post.id}/" class="hover:text-blue-600">${post.title}</a>
+            </h2>
+            <p class="text-gray-600 mb-3">
+              ${post.is_post_hot ? '<span class="text-red-500 font-bold">🔥 Hot</span> | ' : ''}
+              <i>${new Date(post.created_at).toLocaleString()}</i> |
+              Views: ${post.post_views} |
+              Author: ${post.author || "Unknown"}
+            </p>
+            <p class="text-gray-700 mb-4">
+              ${post.content.split(" ").slice(0, 25).join(" ")}...
+            </p>
+            <div class="flex gap-2">
+              <a href="/forum/${post.id}/">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                  Read More
+                </button>
+              </a>
+              ${String(post.user_id) === String(userId) ? `
+                <a href="/forum/edit/${post.id}/">
+                  <button class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                    Edit
+                  </button>
+                </a>
+                <a href="/forum/delete/${post.id}/">
+                  <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Delete
+                  </button>
+                </a>
+              ` : ''}
+            </div>
+          `;
+          
+          postsContainer.appendChild(postElement);
+        });
+
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        postsContainer.innerHTML = `<p class="text-center text-red-500">Error loading posts: ${error.message}</p>`;
+      }
+    }
+
+    const modal = document.getElementById("createPostModal");
+    const openBtn = document.getElementById("openCreatePostModal");
+    const closeBtn = document.getElementById("closeCreatePostModal");
+    const cancelBtn = document.getElementById("cancelCreatePost");
+    const form = document.getElementById("createPostForm");
+
+    openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
+    closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+    cancelBtn.addEventListener("click", () => modal.classList.add("hidden"));
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch("{% url 'forumModule:create_post' %}", {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+          },
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("Failed to create post");
+
+        modal.classList.add("hidden");
+        form.reset();
+
+        loadPosts();
+
+      } catch (error) {
+        console.error("Error creating post:", error);
+        alert("Failed to create post. Please try again.");
+      }
+    });
+
+
+    filterAllBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      loadPosts("all");
+    });
+
+    filterMyBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      loadPosts("my");
+    });
+
+    loadPosts();
+  });
+</script>
+{% endblock content %}
