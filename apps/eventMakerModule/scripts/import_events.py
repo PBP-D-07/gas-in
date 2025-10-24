@@ -7,7 +7,7 @@ def run():
     with open('data/events.json', 'r', encoding='utf-8') as f:
         events = json.load(f)
 
-    owner = User.objects.first()
+    owner = User.objects.filter(is_admin=False).first()
 
     for e in events:
         event = Event.objects.create(
