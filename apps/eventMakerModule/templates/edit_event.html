@@ -256,6 +256,7 @@
           "X-CSRFToken": getCookie('csrftoken'),
         },
         body: formData,
+        credentials: "include",
       });
       const result = await response.json();
       if (!response.ok) {
