@@ -1,163 +1,220 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block meta %}
-<title>gas.in | Discover Events  </title>
-{% endblock meta %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block meta %}
+<title>gas.in | Discover Events</title>
+{% endblock meta %} {% block content %}
 <div class="container mx-auto px-4 py-8 pt-32">
-    <!-- Header -->
-    <div class="mb-8 flex justify-between max-lg:flex-col gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Discover Events</h1>
-            <p class="text-gray-600">Temukan event olahraga yang sesuai dengan minat Anda</p>
-        </div>
-        <a href="{% url 'eventMakerModule:show_create' %}" 
-           class="px-6 py-3 w-fit bg-gradient-to-r from-indigo-700 to-purple-800 hover:brightness-90 text-white font-semibold rounded-xl transition-all flex items-center gap-2 hover:-translate-y-0.5 transform duration-500 shadow-md hover:shadow-lg">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Create Event
-        </a>
+  <!-- Header -->
+  <div class="mb-8 flex justify-between max-lg:flex-col gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">Discover Events</h1>
+      <p class="text-gray-600">
+        Temukan event olahraga yang sesuai dengan minat Anda
+      </p>
+    </div>
+    <a
+      href="{% url 'eventMakerModule:show_create' %}"
+      class="px-6 py-3 w-fit bg-gradient-to-r from-indigo-700 to-purple-800 hover:brightness-90 text-white font-semibold rounded-xl transition-all flex items-center gap-2 hover:-translate-y-0.5 transform duration-500 shadow-md hover:shadow-lg"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 4v16m8-8H4"
+        ></path>
+      </svg>
+      Create Event
+    </a>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-4">Filter Events</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Filter Lokasi -->
+      <div>
+        <label
+          for="location-filter"
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Lokasi
+        </label>
+        <select
+          id="location-filter"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="">Semua Lokasi</option>
+          <option value="Jakarta">Jakarta</option>
+          <option value="Bogor">Bogor</option>
+          <option value="Depok">Depok</option>
+          <option value="Tangerang">Tangerang</option>
+          <option value="Bekasi">Bekasi</option>
+        </select>
+      </div>
+
+      <!-- Filter Kategori -->
+      <div>
+        <label
+          for="category-filter"
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Kategori Olahraga
+        </label>
+        <select
+          id="category-filter"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="">Semua Kategori</option>
+          <option value="running">Lari</option>
+          <option value="badminton">Badminton</option>
+          <option value="futsal">Futsal</option>
+          <option value="football">Sepak Bola</option>
+          <option value="basketball">Basket</option>
+          <option value="cycling">Sepeda</option>
+          <option value="volleyball">Voli</option>
+          <option value="yoga">Yoga</option>
+          <option value="padel">Padel</option>
+          <option value="other">Lainnya</option>
+        </select>
+      </div>
+
+      <!-- Tombol Reset -->
+      <div class="flex items-end">
+        <button
+          id="reset-filter"
+          class="w-full px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-800 hover:brightness-90 text-white rounded-lg transition-all"
+        >
+          Reset Filter
+        </button>
+      </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Filter Events</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Filter Lokasi -->
-            <div>
-                <label for="location-filter" class="block text-sm font-medium text-gray-700 mb-2">
-                    Lokasi
-                </label>
-                <select id="location-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="">Semua Lokasi</option>
-                    <option value="Jakarta">Jakarta</option>
-                    <option value="Bogor">Bogor</option>
-                    <option value="Depok">Depok</option>
-                    <option value="Tangerang">Tangerang</option>
-                    <option value="Bekasi">Bekasi</option>
-                </select>
-            </div>
+    <!-- Filter Info -->
+    <div id="filter-info" class="mt-4 text-sm text-gray-600"></div>
+  </div>
 
-            <!-- Filter Kategori -->
-            <div>
-                <label for="category-filter" class="block text-sm font-medium text-gray-700 mb-2">
-                    Kategori Olahraga
-                </label>
-                <select id="category-filter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="">Semua Kategori</option>
-                    <option value="running">Lari</option>
-                    <option value="badminton">Badminton</option>
-                    <option value="futsal">Futsal</option>
-                    <option value="football">Sepak Bola</option>
-                    <option value="basketball">Basket</option>
-                    <option value="cycling">Sepeda</option>
-                    <option value="volleyball">Voli</option>
-                    <option value="yoga">Yoga</option>
-                    <option value="padel">Padel</option>
-                    <option value="other">Lainnya</option>
-                </select>
-            </div>
+  <!-- Loading State -->
+  <div id="loading" class="text-center py-8 hidden">
+    <div
+      class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"
+    ></div>
+    <p class="mt-2 text-gray-600">Memuat event...</p>
+  </div>
 
-            <!-- Tombol Reset -->
-            <div class="flex items-end">
-                <button id="reset-filter" class="w-full px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-800 hover:brightness-90 text-white rounded-lg transition-all">
-                    Reset Filter
-                </button>
-            </div>
-        </div>
+  <!-- Events Grid -->
+  <div
+    id="events-container"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+  ></div>
 
-        <!-- Filter Info -->
-        <div id="filter-info" class="mt-4 text-sm text-gray-600"></div>
-    </div>
-
-    <!-- Loading State -->
-    <div id="loading" class="text-center py-8 hidden">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        <p class="mt-2 text-gray-600">Memuat event...</p>
-    </div>
-
-    <!-- Events Grid -->
-    <div id="events-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    </div>
-
-    <!-- Empty State -->
-    <div id="empty-state" class="text-center py-12 hidden">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada event</h3>
-        <p class="mt-1 text-sm text-gray-500">Tidak ada event yang sesuai dengan filter Anda.</p>
-    </div>
+  <!-- Empty State -->
+  <div id="empty-state" class="text-center py-12 hidden">
+    <svg
+      class="mx-auto h-12 w-12 text-gray-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+      ></path>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada event</h3>
+    <p class="mt-1 text-sm text-gray-500">
+      Tidak ada event yang sesuai dengan filter Anda.
+    </p>
+  </div>
 </div>
 
 <script>
-    // Load events saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        loadEvents();
-        
-        // Event listener untuk filter
-        document.getElementById('location-filter').addEventListener('change', loadEvents);
-        document.getElementById('category-filter').addEventListener('change', loadEvents);
-        document.getElementById('reset-filter').addEventListener('click', resetFilters);
-    });
+  // Load events saat halaman dimuat
+  document.addEventListener("DOMContentLoaded", function () {
+    loadEvents();
 
-    async function loadEvents() {
-        const loading = document.getElementById('loading');
-        const container = document.getElementById('events-container');
-        const emptyState = document.getElementById('empty-state');
-        const filterInfo = document.getElementById('filter-info');
-        
-        // Show loading
-        loading.classList.remove('hidden');
-        container.innerHTML = '';
-        emptyState.classList.add('hidden');
-        
-        // Get filter values
-        const location = document.getElementById('location-filter').value;
-        const category = document.getElementById('category-filter').value;
-        
-        // Build query string
-        const params = new URLSearchParams();
-        if (location) params.append('location', location);
-        if (category) params.append('category', category);
-        
-        try {
-            const response = await fetch(`/event/api/events/?${params.toString()}`);
-            const result = await response.json();
-            
-            // Hide loading
-            loading.classList.add('hidden');
-            
-            // Update filter info
-            updateFilterInfo(result.filters_applied, result.total);
-            
-            if (result.data && result.data.length > 0) {
-                result.data.forEach(event => {
-                    container.appendChild(createEventCard(event));
-                });
-            } else {
-                emptyState.classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Error loading events:', error);
-            loading.classList.add('hidden');
-            container.innerHTML = '<p class="text-red-500 text-center col-span-full">Terjadi kesalahan saat memuat event.</p>';
-        }
+    // Event listener untuk filter
+    document
+      .getElementById("location-filter")
+      .addEventListener("change", loadEvents);
+    document
+      .getElementById("category-filter")
+      .addEventListener("change", loadEvents);
+    document
+      .getElementById("reset-filter")
+      .addEventListener("click", resetFilters);
+  });
+
+  async function loadEvents() {
+    const loading = document.getElementById("loading");
+    const container = document.getElementById("events-container");
+    const emptyState = document.getElementById("empty-state");
+    const filterInfo = document.getElementById("filter-info");
+
+    // Show loading
+    loading.classList.remove("hidden");
+    container.innerHTML = "";
+    emptyState.classList.add("hidden");
+
+    // Get filter values
+    const location = document.getElementById("location-filter").value;
+    const category = document.getElementById("category-filter").value;
+
+    // Build query string
+    const params = new URLSearchParams();
+    if (location) params.append("location", location);
+    if (category) params.append("category", category);
+
+    try {
+      const response = await fetch(`/event/api/events/?${params.toString()}`);
+      const result = await response.json();
+
+      // Hide loading
+      loading.classList.add("hidden");
+
+      // Update filter info
+      updateFilterInfo(result.filters_applied, result.total);
+
+      if (result.data && result.data.length > 0) {
+        result.data.forEach((event) => {
+          container.appendChild(createEventCard(event));
+        });
+      } else {
+        emptyState.classList.remove("hidden");
+      }
+    } catch (error) {
+      console.error("Error loading events:", error);
+      loading.classList.add("hidden");
+      container.innerHTML =
+        '<p class="text-red-500 text-center col-span-full">Terjadi kesalahan saat memuat event.</p>';
+    }
+  }
+
+  function createEventCard(event) {
+    const card = document.createElement("div");
+    card.className =
+      "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer";
+    card.onclick = () =>
+      (window.location.href = `/event-maker/detail/${event.id}/`);
+
+		let thumbnailUrl
+
+    if (event.thumbnail) {
+      thumbnailUrl = `/media/event_thumbnails/${data.thumbnail}`;
+    } else {
+      thumbnailUrl = "{% static 'image/no-image.jpg' %}";
     }
 
-    function createEventCard(event) {
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer';
-        card.onclick = () => window.location.href = `/event-maker/detail/${event.id}/`;
-        
-        const thumbnailUrl = event.thumbnail || "{% static 'image/no-image.jpg' %}";
-        
-        card.innerHTML = `
-            <img src="${thumbnailUrl}" alt="${event.name}" class="w-full h-48 object-cover">
+    card.innerHTML = `
+            <img src="${thumbnailUrl}" alt="${
+      event.name
+    }" class="w-full h-48 object-cover">
             <div class="p-4">
                 <div class="flex items-center justify-between mb-2">
                     <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
@@ -167,8 +224,12 @@
                         ${event.participants_count} peserta
                     </span>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate">${event.name}</h3>
-                <p class="text-sm text-gray-600 mb-3 line-clamp-2">${event.description}</p>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate">${
+                  event.name
+                }</h3>
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">${
+                  event.description
+                }</p>
                 <div class="flex items-center text-sm text-gray-500 mb-2">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -180,54 +241,57 @@
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    ${new Date(event.date).toLocaleDateString('id-ID', { 
-                        day: 'numeric', 
-                        month: 'short', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                    ${new Date(event.date).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                 </div>
             </div>
         `;
-        
-        return card;
-    }
 
-    function updateFilterInfo(filters, total) {
-        const filterInfo = document.getElementById('filter-info');
-        const appliedFilters = [];
-        
-        if (filters.location) appliedFilters.push(`Lokasi: ${filters.location}`);
-        if (filters.category) appliedFilters.push(`Kategori: ${getCategoryLabel(filters.category)}`);
-        
-        if (appliedFilters.length > 0) {
-            filterInfo.textContent = `Menampilkan ${total} event dengan filter: ${appliedFilters.join(', ')}`;
-        } else {
-            filterInfo.textContent = `Menampilkan ${total} event`;
-        }
-    }
+    return card;
+  }
 
-    function getCategoryLabel(value) {
-        const categories = {
-            'running': 'Lari',
-            'badminton': 'Badminton',
-            'futsal': 'Futsal',
-            'football': 'Sepak Bola',
-            'basketball': 'Basket',
-            'cycling': 'Sepeda',
-            'volleyball': 'Voli',
-            'yoga': 'Yoga',
-            'padel': 'Padel',
-            'other': 'Lainnya'
-        };
-        return categories[value] || value;
-    }
+  function updateFilterInfo(filters, total) {
+    const filterInfo = document.getElementById("filter-info");
+    const appliedFilters = [];
 
-    function resetFilters() {
-        document.getElementById('location-filter').value = '';
-        document.getElementById('category-filter').value = '';
-        loadEvents();
+    if (filters.location) appliedFilters.push(`Lokasi: ${filters.location}`);
+    if (filters.category)
+      appliedFilters.push(`Kategori: ${getCategoryLabel(filters.category)}`);
+
+    if (appliedFilters.length > 0) {
+      filterInfo.textContent = `Menampilkan ${total} event dengan filter: ${appliedFilters.join(
+        ", "
+      )}`;
+    } else {
+      filterInfo.textContent = `Menampilkan ${total} event`;
     }
+  }
+
+  function getCategoryLabel(value) {
+    const categories = {
+      running: "Lari",
+      badminton: "Badminton",
+      futsal: "Futsal",
+      football: "Sepak Bola",
+      basketball: "Basket",
+      cycling: "Sepeda",
+      volleyball: "Voli",
+      yoga: "Yoga",
+      padel: "Padel",
+      other: "Lainnya",
+    };
+    return categories[value] || value;
+  }
+
+  function resetFilters() {
+    document.getElementById("location-filter").value = "";
+    document.getElementById("category-filter").value = "";
+    loadEvents();
+  }
 </script>
 {% endblock content %}

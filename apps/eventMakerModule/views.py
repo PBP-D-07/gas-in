@@ -75,7 +75,7 @@ def get_all_event(request):
             'location': e.location,
             'category': e.category,
             'category_display': e.get_category_display(),  # type: ignore
-            'thumbnail': settings.MEDIA_URL + str(e.thumbnail) if e.thumbnail else None,
+            'thumbnail': e.thumbnail.url if e.thumbnail else None,
             'owner': e.owner.id if e.owner else None,
         }
         data.append(e_dict)
