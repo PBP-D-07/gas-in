@@ -180,6 +180,7 @@
   const placeholder = document.getElementById("thumbnail-placeholder");
   const eventId = "{{ event_id }}";
   const backBtn = document.getElementById("back-btn");
+  const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
   async function fetchData() {
     try {
@@ -251,6 +252,9 @@
     try {
       const response = await fetch(`/event-maker/api/edit/${eventId}/`, {
         method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
         body: formData,
       });
       const result = await response.json();

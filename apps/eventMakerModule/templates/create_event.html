@@ -186,6 +186,7 @@
   const filenameDisplay = document.getElementById("thumbnail-filename");
   const fileIcon = document.getElementById("file-icon");
   const backBtn = document.getElementById("back-btn");
+  const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
   thumbnailInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
@@ -216,6 +217,9 @@
     try {
       const response = await fetch("/event-maker/api/create/", {
         method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
         body: formData,
       });
 
