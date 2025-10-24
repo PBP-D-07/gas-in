@@ -9,6 +9,7 @@ from apps.forumModule.models import Post, Comment
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 
 def is_dummy_user(username):
     import json, os
@@ -97,6 +98,7 @@ def show_post(request, post_id):
 
 @login_required
 @require_http_methods(["POST"])
+@csrf_exempt
 def create_post(request):
     form = PostForm(request.POST)
     if form.is_valid():
@@ -122,6 +124,7 @@ def create_post(request):
 
 
 @login_required
+@csrf_exempt
 def edit_post(request, id):
     post = get_object_or_404(Post, pk=id, owner=request.user)
 
@@ -141,6 +144,7 @@ def edit_post(request, id):
 
 @login_required
 @require_http_methods(["POST"])
+@csrf_exempt
 def delete_post(request, id):
     post = get_object_or_404(Post, pk=id, owner=request.user)
     post.delete()
@@ -151,6 +155,7 @@ def delete_post(request, id):
     return HttpResponseRedirect(reverse("forumModule:show_main"))
 
 @login_required
+@csrf_exempt
 def toggle_like(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     user = request.user
@@ -181,6 +186,7 @@ def check_user_liked(request, post_id):
 
 @login_required
 @require_http_methods(["POST"])
+@csrf_exempt
 def add_comment(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     content = request.POST.get("content", "").strip()
