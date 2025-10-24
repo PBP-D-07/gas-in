@@ -156,7 +156,7 @@
         .getElementById("category-icon")
         .setAttribute("src", `/static/image/category/${data.category}.png`);
       if (data.thumbnail) {
-        const thumbnailUrl = `/media/event_thumbnails/${data.thumbnail}`;
+        const thumbnailUrl = `${data.thumbnail}`;
         document.getElementById("thumbnail").setAttribute("src", thumbnailUrl);
       }
 

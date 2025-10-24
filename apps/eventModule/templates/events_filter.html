@@ -206,7 +206,7 @@
 		let thumbnailUrl
 
     if (event.thumbnail) {
-      thumbnailUrl = `/media/event_thumbnails/${event.thumbnail}`;
+      thumbnailUrl = `${event.thumbnail}`;
     } else {
       thumbnailUrl = "{% static 'image/no-image.jpg' %}";
     }
