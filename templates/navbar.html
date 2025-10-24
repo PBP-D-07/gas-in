@@ -14,25 +14,25 @@
       <div class="hidden md:flex items-center space-x-8">
         <a
           href="/"
-          class="text-gray-600 hover:text-blue-400 font-medium transition-all"
+          class="{% if request.path == '/' %}text-purple-800 {% else %}text-gray-600 hover:text-purple-800 {% endif %} font-medium transition-all"
         >
           Home
         </a>
         <a
           href="{% url 'eventModule:show_discover' %}"        
-          class="text-gray-600 hover:text-blue-400 font-medium transition-all"
+          class="text-gray-600 hover:text-purple-800 font-medium transition-all"
         >
           Event
         </a>
         <a
           href="{% url 'venue:show_venue' %}"
-          class="text-gray-600 hover:text-blue-400 font-medium transition-all"
+          class="text-gray-600 hover:text-purple-800 font-medium transition-all"
         >
           Venue
         </a>
         <a
           href="{% url 'forumModule:show_main' %}"
-          class="text-gray-600 hover:text-blue-400 font-medium transition-all"
+          class="text-gray-600 hover:text-purple-800 font-medium transition-all"
         >
           Forum
         </a>

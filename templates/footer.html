@@ -1,11 +1,13 @@
 {% load static %}
 <div
-  class="flex flex-col w-full bg-blue-100 gap-10 max-lg:px-10 max-lg:pt-10 px-20 pt-20"
+  class="flex flex-col w-full bg-gradient-to-b from-indigo-700 to-purple-800 gap-10 max-lg:px-10 max-lg:pt-10 px-20 pt-20"
 >
-  <div class="flex max-lg:flex-col max-lg:gap-10 w-full lg:items-center justify-between">
+  <div
+    class="flex max-lg:flex-col max-lg:gap-10 w-full lg:items-center justify-between"
+  >
     <div class="flex flex-col gap-10 w-80 max-lg:w-full">
-      <h1 class="text-2xl font-semibold">gas.in</h1>
-      <p class="text-wrap text-gray-500">
+      <h1 class="text-2xl font-semibold text-white">gas.in</h1>
+      <p class="text-wrap text-white">
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui,
         perspiciatis? Lorem ipsum dolor sit amet, consectetur adipisicing elit.
         Ad, officiis.
@@ -13,25 +15,50 @@
       <div id="icon-container" class="flex gap-4"></div>
     </div>
     <div class="flex max-lg:flex-col h-fit max-lg:gap-4 gap-12">
-      <a href="" class="font-semibold text-gray-500 hover:text-black transition-all">Home</a>
-      <a href="" class="font-semibold text-gray-500 hover:text-black transition-all">Event</a>
-      <a href="" class="font-semibold text-gray-500 hover:text-black transition-all">Venue</a>
-      <a href="" class="font-semibold text-gray-500 hover:text-black transition-all">Forum</a>
+      <a
+        href="/"
+        class="font-semibold text-white hover:brightness-75 transition-all"
+        >Home</a
+      >
+      <a
+        href="/event/"
+        class="font-semibold text-white hover:brightness-75 transition-all"
+        >Event</a
+      >
+      <a
+        href="/venue/"
+        class="font-semibold text-white hover:brightness-75 transition-all"
+        >Venue</a
+      >
+      <a
+        href="/forum/"
+        class="font-semibold text-white hover:brightness-75 transition-all"
+        >Forum</a
+      >
     </div>
     <div class="flex h-fit">
       <div class="flex flex-col gap-1 max-lg:w-full">
-        <label for="message" class="px-1 mb-1 text-gray-600">Suggestion for gas.in</label>
+        <label for="message" class="px-1 mb-1 text-white font-semibold"
+          >Suggestion for gas.in</label
+        >
         <div class="flex gap-3">
-          <input type="text" id="message" class="rounded-md max-lg:w-full focus:outline-none px-1" autocomplete="false"/>
-          <button type="submit" class="rounded-md bg-blue-400 hover:bg-blue-500 transition-all h-full px-3 py-1 text-white">
+          <input
+            type="text"
+            id="message"
+            class="rounded-md max-lg:w-full focus:shadow-md focus:ring-1 focus:ring-blue-300 focus:outline-none px-1"
+          />
+          <button
+            type="submit"
+            class="rounded-md bg-white hover:brightness-90 duration-500 hover:shadow-md transition-all h-full px-3 py-1 text-blue-400 font-semibold"
+          >
             Send
           </button>
         </div>
       </div>
     </div>
   </div>
-  <div class="w-full border-t-2 border-gray-300 py-4">
-    <p class="text-center text-gray-500 ">© 2025 gas.in. All rights reserved.</p>
+  <div class="w-full border-t-2 border-white py-4">
+    <p class="text-center text-white">© 2025 gas.in. All rights reserved.</p>
   </div>
 </div>
 <script>
@@ -52,10 +79,11 @@
       "h-10",
       "p-1",
       "rounded-full",
-      "hover:bg-blue-200",
+      "hover:brightness-75",
+      "duration-300",
       "transition-all"
     );
-    imageButton.href="";
+    imageButton.href = "";
     const imageTag = document.createElement("img");
     imageTag.src = staticBase + icon;
     imageTag.alt = icon.split(".")[0];
