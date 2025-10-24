@@ -2,8 +2,22 @@
 <title>gas.in | Event Maker</title>
 {% endblock meta %} {% block content%}
 <div
-  class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10"
+  class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10 lg:gap-14"
 >
+  <button
+    id="back-btn"
+    class="rounded-lg bg-gradient-to-r from-blue-400 to-purple-400 p-0.5 overflow-hidden w-fit"
+  >
+    <div class="group py-2 px-4 flex gap-2.5 items-center">
+      <img
+        src="{% static 'image/right-arrow.png' %}"
+        alt="arrow"
+        class="invert rotate-180 w-4 h-auto group-hover:-translate-x-0.5 transition-all transform duration-300"
+      />
+      <h2 class="text-lg font-semibold text-white">Back</h2>
+    </div>
+  </button>
+
   <div class="flex flex-col gap-3">
     <h2
       class="text-5xl max-lg:text-3xl max-md:text-2xl max-lg:text-center font-bold"
@@ -15,7 +29,7 @@
     </p>
   </div>
 
-  <div class="w-full p-8 rounded-lg border-2 border-gray-500">
+  <div class="w-full p-8 rounded-xl shadow-2xl border-1">
     <form id="event-form" method="POST" class="w-full">
       {% csrf_token %}
       <div class="flex max-lg:flex-col w-full gap-10">
@@ -29,7 +43,7 @@
               id="name"
               name="name"
               required
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-400 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             />
           </div>
 
@@ -43,7 +57,7 @@
               id="description"
               name="description"
               rows="3"
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-400 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             ></textarea>
           </div>
 
@@ -56,7 +70,7 @@
               id="date"
               name="date"
               required
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-400 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             />
           </div>
 
@@ -69,7 +83,7 @@
               id="location"
               name="location"
               required
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-400 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             />
           </div>
 
@@ -80,7 +94,7 @@
             <select
               id="category"
               name="category"
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-400 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             >
               <option value="running">Lari</option>
               <option value="badminton">Badminton</option>
@@ -104,7 +118,7 @@
             <label
               for="thumbnail"
               id="thumbnail-label"
-              class="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-gray-400 rounded-xl cursor-pointer hover:bg-gray-200 transition relative overflow-hidden"
+              class="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-purple-400 rounded-xl cursor-pointer hover:bg-gray-200 transition relative overflow-hidden"
             >
               <div
                 id="thumbnail-placeholder"
@@ -152,7 +166,7 @@
     <button
       type="submit"
       form="event-form"
-      class="rounded-lg bg-blue-400 hover:bg-blue-500 transition-all text-white text-2xl max-md:text-xl font-semibold px-5 py-2 max-md:px-3 max-md:py-2"
+      class="rounded-lg bg-gradient-to-r from-blue-400 to-purple-400 hover:shadow-xl hover:-translate-y-0.5 duration-300 text-white hover:brightness-90 transform transition-all text-2xl max-md:text-xl font-semibold px-5 py-3 max-md:px-3 max-md:py-2"
     >
       Save
     </button>
@@ -165,6 +179,7 @@
   const thumbnailPreview = document.getElementById("thumbnail-preview");
   const placeholder = document.getElementById("thumbnail-placeholder");
   const eventId = "{{ event_id }}";
+  const backBtn = document.getElementById("back-btn");
 
   async function fetchData() {
     try {
@@ -250,6 +265,15 @@
     } catch (error) {
       console.error("Error:", error);
     }
+  });
+
+  backBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const currentUrl = window.location.pathname;  
+    const id = currentUrl.split("/").filter(Boolean).pop(); 
+
+    window.location.href = `/event-maker/detail/${id}/`;
   });
 
   document.addEventListener("DOMContentLoaded", fetchData);
