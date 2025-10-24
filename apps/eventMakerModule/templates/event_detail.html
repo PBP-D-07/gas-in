@@ -32,6 +32,14 @@
         </div>
         <div class="flex gap-2 items-center">
           <img
+            src="{% static 'image/clock.png' %}"
+            alt="time"
+            class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
+          />
+          <p id="time">08:00</p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <img
             src="{% static 'image/location.png' %}"
             alt="location"
             class="w-5 h-auto hover:rotate-12 transition-all transform duration-300"
@@ -129,7 +137,8 @@
       }
 
       const rawDate = data.date;
-      const dateObj = new Date("2025-07-13");
+      const dateObj = new Date(rawDate);
+      const time = dateObj.toTimeString().slice(0, 5);
       const formattedDate = new Intl.DateTimeFormat("id-ID", {
         day: "numeric",
         month: "long",
@@ -139,6 +148,7 @@
       document.getElementById("name").innerHTML = data.name || "";
       document.getElementById("description").innerHTML = data.description || "";
       document.getElementById("date").innerHTML = formattedDate || "";
+      document.getElementById("time").innerHTML = time || "";
       document.getElementById("location").innerHTML = data.location || "";
       document.getElementById("category").innerHTML =
         data.category_display || "";

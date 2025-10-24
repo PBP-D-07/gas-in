@@ -32,38 +32,6 @@ def venue_detail(request, venue_id):
 
     return render(request, "venue_detail.html", context)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # mengembalikan data dalam bentuk XML
 def show_xml_venue(request):
     venue_list = Venue.objects.all()
@@ -75,7 +43,7 @@ def show_json_venue(request):
     venue_list = Venue.objects.prefetch_related('images').all()
     data = []
     for venue in venue_list:
-        images = [img.image for img in venue.images.all()]
+        images = [img.image for img in venue.images.all()] #type: ignore
         data.append({
             'id': str(venue.id),
             'name': venue.name,
@@ -87,7 +55,7 @@ def show_json_venue(request):
             'owner_username': venue.owner.username if venue.owner else None,
             'category': venue.category,
             'created_at': venue.created_at.isoformat(),
-            'owner_id': venue.owner_id,
+            'owner_id': venue.owner_id, #type: ignore
         })
 
     return JsonResponse(data, safe=False)
@@ -105,7 +73,7 @@ def show_xml_by_id_venue(request, venue_id):
 def show_json_by_id_venue(request, venue_id):
     try:
         venue = Venue.objects.prefetch_related('images').get(pk=venue_id)
-        images = [img.image for img in venue.images.all()]
+        images = [img.image for img in venue.images.all()] #type: ignore
         data = {
             'id': str(venue.id),
             'name': venue.name,
@@ -117,7 +85,7 @@ def show_json_by_id_venue(request, venue_id):
             'owner_username': venue.owner.username if venue.owner else None,
             'category': venue.category,
             'created_at': venue.created_at.isoformat(),
-            'owner_id': venue.owner_id,
+            'owner_id': venue.owner_id, #type: ignore
         }
         return JsonResponse(data)
     except Venue.DoesNotExist:

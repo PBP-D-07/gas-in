@@ -6,7 +6,7 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8 pt-32">
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">Discovery Sport Event</h1>
@@ -145,7 +145,7 @@
         card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer';
         card.onclick = () => window.location.href = `/event-maker/detail/${event.id}/`;
         
-        const thumbnailUrl = event.thumbnail || 'https://via.placeholder.com/400x200?text=No+Image';
+        const thumbnailUrl = event.thumbnail || "{% static 'image/no-image.jpg' %}";
         
         card.innerHTML = `
             <img src="${thumbnailUrl}" alt="${event.name}" class="w-full h-48 object-cover">

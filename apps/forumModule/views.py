@@ -56,7 +56,7 @@ def show_post(request, post_id):
         post = get_object_or_404(Post, pk=post_id)
         is_real_user = True
 
-        post.increment_views()
+        post.increment_views() 
 
         if request.user.is_authenticated and post.owner == request.user:
             is_owner = True
@@ -94,8 +94,6 @@ def show_post(request, post_id):
     context["post_id"] = post_id_value
 
     return render(request, 'post_detail.html', context)
-
-
 
 @login_required
 @require_http_methods(["POST"])

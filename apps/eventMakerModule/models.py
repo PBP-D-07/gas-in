@@ -25,7 +25,7 @@ class Event(models.Model):
     thumbnail = models.ImageField(upload_to='event_thumbnails/', blank=True, null=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
     created_at = models.DateTimeField(auto_now_add=True)
-    is_accepted = models.BooleanField(default=False)
+    is_accepted = models.BooleanField(default=None, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='owned_events')
     participants = models.ManyToManyField(User, related_name='joined_events', blank=True)
 

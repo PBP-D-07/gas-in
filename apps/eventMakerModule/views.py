@@ -4,6 +4,8 @@ from django.forms.models import model_to_dict
 from django.conf import settings
 from django.http import JsonResponse
 from apps.eventMakerModule.models import Event
+from django.utils import timezone
+from datetime import datetime
 
 def show_create(request):
     return render(request, "create_event.html")
@@ -14,7 +16,6 @@ def show_edit(request, id):
 def show_detail(request, id):
     return render(request, "event_detail.html", {"event_id":id})
 
-@login_required
 def create_event(request):
     if request.method != 'POST':
         return JsonResponse({
@@ -27,6 +28,8 @@ def create_event(request):
         category = request.POST.get("category")
         thumbnail = request.FILES.get("thumbnail")
         owner = request.user
+        date_obj = datetime.strptime(date, "%Y-%m-%dT%H:%M")
+        aware_date = timezone.make_aware(date_obj, timezone.get_current_timezone())
         
         if not owner.is_authenticated:
             return JsonResponse({"message": "You must be logged in to create an event"}, status=401)
@@ -34,7 +37,7 @@ def create_event(request):
         new_event = Event.objects.create(
             name=name,
             description=description,
-            date=date,
+            date=aware_date,
             location=location,
             category=category,
             thumbnail=thumbnail,
@@ -44,8 +47,8 @@ def create_event(request):
         event_dict = model_to_dict(new_event, exclude=['owner', 'thumbnail'])
         event_dict['id'] = str(new_event.id)
         event_dict['owner'] = {
-            "id": new_event.owner.id, 
-            "username": new_event.owner.username, 
+            "id": new_event.owner.id,  #type:ignore
+            "username": new_event.owner.username,  #type:ignore
         }
         event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail) if new_event.thumbnail else None
         

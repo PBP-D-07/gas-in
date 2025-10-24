@@ -1,12 +1,12 @@
 /* Untuk Chrome, Safari, Edge */
 input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0px 1000px white inset; 
+  -webkit-box-shadow: 0 0 0px 1000px #e5e7eb inset; 
   -webkit-text-fill-color: black; 
   transition: background-color 5000s ease-in-out 0s; 
 }
 
 /* Untuk Firefox */
 input:-moz-autofill {
-  box-shadow: 0 0 0px 1000px white inset;
+  box-shadow: 0 0 0px 1000px #e5e7eb inset;
   -moz-text-fill-color: black;
 }
