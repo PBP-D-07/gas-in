@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.conf import settings
 from django.http import JsonResponse
@@ -16,6 +16,7 @@ def show_edit(request, id):
 def show_detail(request, id):
     return render(request, "event_detail.html", {"event_id":id})
 
+@csrf_exempt
 def create_event(request):
     if request.method != 'POST':
         return JsonResponse({
@@ -105,6 +106,7 @@ def get_event_by_id(request, id):
 
     return JsonResponse({"message": "Event retrieved successfully", "data": event_dict}, status=200)
 
+@csrf_exempt
 def delete_event(request, id):
     if request.method != 'POST':
         return JsonResponse({
@@ -119,6 +121,7 @@ def delete_event(request, id):
         "message": "Event succesfully deleted"
     }, status=200)
     
+@csrf_exempt
 def join_event(request, id):
     if request.method != 'POST':
         return JsonResponse({
@@ -153,6 +156,7 @@ def join_event(request, id):
         }
     }, status=200)
     
+@csrf_exempt
 def edit_event(request, id): 
     if request.method != 'POST':
         return JsonResponse({
