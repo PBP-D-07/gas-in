@@ -380,10 +380,70 @@
 
     // Comment Modal
     window.openCommentModal = async function(postId) {
-      document.getElementById("commentModal").classList.add("show");
-      document.getElementById("commentPostId").value = postId;
-      await loadComments(postId);
-    };
+  document.getElementById("commentModal").classList.add("show");
+  document.getElementById("commentPostId").value = postId;
+
+  // ambil post data
+  let post;
+  try {
+    const response = await fetch(`/forum/json/${postId}/`);
+    post = await response.json();
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    return;
+  }
+
+  const commentsList = document.getElementById('commentsList');
+  commentsList.innerHTML = '<div class="loading-comments"><div class="spinner-sm"></div></div>';
+
+  // enable/disable comment form
+  const commentContent = document.getElementById('commentContent');
+  const commentBtn = document.querySelector('#commentForm button[type="submit"]');
+  if (post.owner_id == null) { // dummy post
+    if (commentContent) commentContent.disabled = true;
+    if (commentBtn) {
+      commentBtn.disabled = true;
+      commentBtn.textContent = 'Read-only';
+      commentBtn.className = "px-6 py-2 text-white font-semibold rounded-xl bg-gradient-to-r from-indigo-300 to-purple-300 cursor-not-allowed select-none opacity-80";
+    }
+  } else { // real user post
+    if (commentContent) commentContent.disabled = false;
+    if (commentBtn) {
+      commentBtn.disabled = false;
+      commentBtn.textContent = 'Send';
+      commentBtn.className = "px-6 py-2 text-white font-semibold rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all";
+    }
+  }
+
+  // load comments
+  try {
+    const response = await fetch(`/forum/comment/${postId}/`);
+    const comments = await response.json();
+
+    if (!comments || comments.length === 0) {
+      commentsList.innerHTML = '<p class="no-comments">No comments yet</p>';
+      return;
+    }
+
+    commentsList.innerHTML = comments.map(c => `
+      <div class="comment-item">
+        <div class="comment-avatar">${c.user.charAt(0).toUpperCase()}</div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-author">${c.user}</span>
+            <span class="comment-time">${timeAgo(c.created_at)}</span>
+          </div>
+          <p>${c.content}</p>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (error) {
+    commentsList.innerHTML = '<p class="no-comments">Failed to load comments</p>';
+  }
+};
+
+
 
     async function loadComments(postId) {
       const commentsList = document.getElementById('commentsList');
