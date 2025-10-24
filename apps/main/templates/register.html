@@ -1,4 +1,6 @@
-{% extends 'base.html' %} {% load static %} {% block content %}
+{% extends 'base.html' %} {% load static %} {% block meta %}
+<title>gas.in | Register</title>
+{% endblock meta %} {% block content %}
 
 <div
   class="relative min-h-screen pt-30 flex items-center justify-center w-full"
@@ -9,10 +11,7 @@
       {% csrf_token %}
       <div class="flex flex-col w-full gap-4">
         <div>
-          <label
-            for="username"
-            class="block text-sm font-medium mb-1"
-          >
+          <label for="username" class="block text-sm font-medium mb-1">
             Username
           </label>
           <div class="w-full flex items-center gap-2 border-b">
@@ -33,10 +32,7 @@
         </div>
 
         <div>
-          <label
-            for="password1"
-            class="block text-sm font-medium mb-1"
-          >
+          <label for="password1" class="block text-sm font-medium mb-1">
             Password
           </label>
           <div class="w-full flex items-center gap-2 border-b">
@@ -57,10 +53,7 @@
         </div>
 
         <div>
-          <label
-            for="password2"
-            class="block text-sm font-medium mb-1"
-          >
+          <label for="password2" class="block text-sm font-medium mb-1">
             Confirm Password
           </label>
           <div class="w-full flex items-center gap-2 border-b">
