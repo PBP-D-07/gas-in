@@ -29,5 +29,11 @@ urlpatterns = [
     path('event-maker/', include('apps.eventMakerModule.urls')),    
 ]
 
-if settings.DEBUG:
+if settings.DEBUG or not settings.PRODUCTION:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    from django.views.static import serve
+    from django.urls import re_path
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
