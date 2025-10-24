@@ -1,0 +1,599 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Event Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .pending-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .approved-section {
+            background: #d1e7dd;
+            border-left: 4px solid #198754;
+        }
+        .rejected-section {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">Admin Dashboard</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-white">Welcome, {{ request.user.username }}</span>
+            <button id="logout-btn" class="btn btn-outline-light btn-sm">
+                Logout
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- User Management Section -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">User Management</h4>
+        <small>Promote or demote users to/from admin role</small>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Promote User Form -->
+            <div class="col-md-6">
+                <h5>Promote User to Admin</h5>
+                <form id="promote-form" class="mb-3">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            class="form-control" 
+                            placeholder="Enter username"
+                            required
+                        >
+                        <button type="submit" class="btn btn-success">
+                            ⬆️ Promote
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Demote Admin Form -->
+            <div class="col-md-6">
+                <h5>Demote Admin to User</h5>
+                <form id="demote-form" class="mb-3">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            class="form-control" 
+                            placeholder="Enter username"
+                            required
+                        >
+                        <button type="submit" class="btn btn-warning">
+                            ⬇️ Demote
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- All Users Table -->
+        <h5 class="mt-4">All Users</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- Will be populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logout functionality
+$('#logout-btn').on('click', async function() {
+    if (!confirm('Are you sure you want to logout?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/logout/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.location.href = '/';
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to logout');
+    }
+});
+// Promote User
+$('#promote-form').on('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/api/promote-admin/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(result.message);
+            this.reset();
+            loadUsers(); // Refresh user list
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to promote user');
+    }
+});
+
+// Demote Admin
+$('#demote-form').on('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/api/demote-admin/', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(result.message);
+            this.reset();
+            loadUsers(); // Refresh user list
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to demote user');
+    }
+});
+
+// Load All Users
+async function loadUsers() {
+    try {
+        const response = await fetch('/users/');
+        const result = await response.json();
+        
+        const tbody = $('#users-table-body');
+        tbody.empty();
+        
+        result.data.forEach(user => {
+            const roleClass = user.is_admin ? 'bg-danger' : 'bg-secondary';
+            const roleText = user.is_admin ? 'Admin' : 'User';
+            const date = new Date(user.created_at).toLocaleDateString();
+            
+            const actionBtn = user.is_admin 
+                ? `<button class="btn btn-sm btn-warning demote-user-btn" data-username="${user.username}">Demote</button>`
+                : `<button class="btn btn-sm btn-success promote-user-btn" data-username="${user.username}">Promote</button>`;
+            
+            tbody.append(`
+                <tr>
+                    <td>${user.username}</td>
+                    <td><span class="badge ${roleClass}">${roleText}</span></td>
+                    <td>${date}</td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `);
+        });
+        
+        // Quick promote/demote from table
+        $('.promote-user-btn').on('click', function() {
+            const username = $(this).data('username');
+            $('#promote-form input[name="username"]').val(username);
+            $('#promote-form').submit();
+        });
+        
+        $('.demote-user-btn').on('click', function() {
+            const username = $(this).data('username');
+            $('#demote-form input[name="username"]').val(username);
+            $('#demote-form').submit();
+        });
+        
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+// Load users on page load
+$(document).ready(function() {
+    loadUsers();
+});
+</script>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Requests</h4>
+        <small>Approve or Reject Event from Users</small>
+    </div>
+<div class="container mt-4">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center pending-section">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Requests</h5>
+                    <h2 class="display-4">{{ pending_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center approved-section">
+                <div class="card-body">
+                    <h5 class="card-title">Approved Events</h5>
+                    <h2 class="display-4">{{ approved_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center rejected-section">
+                <div class="card-body">
+                    <h5 class="card-title">Rejected Requests</h5>
+                    <h2 class="display-4">{{ rejected_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Section -->
+    <div class="card mb-4 pending-section">
+        <div class="card-header">
+            <h4 class="mb-0">Pending Event Requests</h4>
+            <small>Review and approve/reject event submissions from event makers</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Submitted By</th>
+                            <th width="200">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in pending_events %}
+                        <tr data-id="{{ event.id }}">
+                            <td><strong>{{ event.name }}</strong></td>
+                            <td><span class="badge bg-info">{{ event.get_category_display }}</span></td>
+                            <td>{{ event.date|date:"d M Y, H:i" }}</td>
+                            <td>{{ event.location|default:"N/A" }}</td>
+                            <td>{{ event.user.username|default:"Unknown" }}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm approve-btn" data-action="approve">
+                                    ✓ Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm reject-btn" data-action="reject">
+                                    ✗ Reject
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No pending requests at the moment
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved Events Section -->
+    <div class="card mb-4 approved-section">
+        <div class="card-header">
+            <h4 class="mb-0">Approved Events</h4>
+            <small>Events that have been approved and are live</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in approved_events %}
+                        <tr data-id="{{ event.id }}">
+                            <td><strong>{{ event.name }}</strong></td>
+                            <td><span class="badge bg-info">{{ event.get_category_display }}</span></td>
+                            <td>{{ event.date|date:"d M Y, H:i" }}</td>
+                            <td>{{ event.location|default:"N/A" }}</td>
+                            <td><span class="badge bg-success">Approved</span></td>
+                            <td>
+                                <button class="btn btn-warning btn-sm revoke-btn">
+                                    Revoke
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No approved events yet
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected Requests Section -->
+    <div class="card mb-4 rejected-section">
+        <div class="card-header">
+            <h4 class="mb-0">Rejected Requests</h4>
+            <small>Events that have been rejected - can be deleted permanently</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in rejected_events %}
+                        <tr data-id="{{ event.id }}">
+                            <td><strong>{{ event.name }}</strong></td>
+                            <td><span class="badge bg-info">{{ event.get_category_display }}</span></td>
+                            <td>{{ event.date|date:"d M Y, H:i" }}</td>
+                            <td>{{ event.location|default:"N/A" }}</td>
+                            <td><span class="badge bg-danger">Rejected</span></td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-btn">
+                                    🗑 Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No rejected requests
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Approve -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Approve Event Request</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to approve this event? The event will be published and visible to users.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmApproveBtn">Approve Event</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Reject -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reject Event Request</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reject this event? The event will be moved to rejected list.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectBtn">Reject Event</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Delete -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Delete Rejected Event</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Warning:</strong> This action cannot be undone. Are you sure you want to permanently delete this rejected event?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Revoke -->
+<div class="modal fade" id="revokeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Revoke Approval</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to revoke approval for this event? It will be moved back to pending status.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmRevokeBtn">Revoke Approval</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let selectedEventId = null;
+
+    // Approve Event
+    $('.approve-btn').on('click', function () {
+        selectedEventId = $(this).closest('tr').data('id');
+        $('#approveModal').modal('show');
+    });
+
+    $('#confirmApproveBtn').on('click', function () {
+        $.ajax({
+            url: `/admin/events/update-status/${selectedEventId}/`,
+            method: 'POST',
+            data: {
+                status: 'approve',
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#approveModal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert('Failed to approve event. Please try again.');
+            }
+        });
+    });
+
+    // Reject Event
+    $('.reject-btn').on('click', function () {
+        selectedEventId = $(this).closest('tr').data('id');
+        $('#rejectModal').modal('show');
+    });
+
+    $('#confirmRejectBtn').on('click', function () {
+        $.ajax({
+            url: `/admin/events/update-status/${selectedEventId}/`,
+            method: 'POST',
+            data: {
+                status: 'reject',
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#rejectModal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert('Failed to reject event. Please try again.');
+            }
+        });
+    });
+
+    // Revoke Approval
+    $('.revoke-btn').on('click', function () {
+        selectedEventId = $(this).closest('tr').data('id');
+        $('#revokeModal').modal('show');
+    });
+
+    $('#confirmRevokeBtn').on('click', function () {
+        $.ajax({
+            url: `/admin/events/update-status/${selectedEventId}/`,
+            method: 'POST',
+            data: {
+                status: 'pending',
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#revokeModal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert('Failed to revoke approval. Please try again.');
+            }
+        });
+    });
+
+    // Delete Event (only for rejected)
+    $('.delete-btn').on('click', function () {
+        selectedEventId = $(this).closest('tr').data('id');
+        $('#deleteModal').modal('show');
+    });
+
+    $('#confirmDeleteBtn').on('click', function () {
+        $.ajax({
+            url: `/admin/events/delete/${selectedEventId}/`,
+            method: 'POST',
+            data: { 
+                csrfmiddlewaretoken: '{{ csrf_token }}' 
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#deleteModal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert('Failed to delete event. Please try again.');
+            }
+        });
+    });
+</script>
+</body>
+</html>
