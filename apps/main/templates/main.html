@@ -1,25 +1,25 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>gas.in — Find Sports Venues Near You</title>
+<title>gas.in | Home</title>
 {% endblock meta %}
 
 {% block content %}
 
 <!-- Hero -->
 <div class="pt-16">
-    <section class="bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 text-white flex items-center justify-center" style="height: calc(100vh - 4rem);">
+    <section class="bg-gradient-to-r from-indigo-700 to-purple-800 text-white flex items-center justify-center" style="height: calc(100vh - 4rem);">
         <div class="max-w-6xl mx-auto px-6 py-24 lg:py-32 text-center">
             <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">Find and Book Sports Events Near You</h1>
             <p class="mt-4 text-lg sm:text-xl opacity-90 max-w-2xl mx-auto">Search local futsal courts, badminton halls, basketball courts, and more! Quickly compare and contact the venue owner to book.</p>
             <div class="mt-8 flex items-center justify-center gap-4">
-                <a href="#about" class="inline-block bg-white text-blue-700 font-semibold px-6 py-3 rounded shadow hover:scale-105 transition-transform">Get Started!</a>
+                <a href="#about" class="inline-block bg-white text-purple-700 hover:text-purple-800 font-semibold px-6 py-3 rounded-xl shadow hover:-translate-y-0.5 transition-all transform duration-300">Get Started!</a>
             </div>
         </div>
     </section>
 
     <!-- About / What is gas.in -->
-    <section id="about" class="py-12 bg-gray-50" style="scroll-margin-top: 4rem;">
+    <section id="about" class="py-12" style="scroll-margin-top: 4rem;">
         <div class="max-w-6xl mx-auto px-6">
             <h2 class="text-2xl font-bold text-center mb-6">What is gas.in?</h2>
             <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">gas.in helps you discover local sports venues, see photos and essential details, and contact the owner to book — all in one place.</p>
@@ -86,15 +86,6 @@
                     <a href="{% url 'forumModule:show_main' %}" class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Visit Forum</a>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Footer CTA -->
-    <section class="py-12 bg-blue-600 text-white">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h3 class="text-xl font-bold">Ready to find a venue?</h3>
-            <p class="mt-2 mb-4 opacity-90">Get started by exploring our available venues.</p>
-            <a href="{% url 'venue:show_venue' %}" class="inline-block bg-white text-blue-700 font-semibold px-6 py-3 rounded shadow">Explore Venues</a>
         </div>
     </section>
 </div>
