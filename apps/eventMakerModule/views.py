@@ -42,7 +42,8 @@ def create_event(request):
             location=location,
             category=category,
             thumbnail=thumbnail,
-            owner=owner
+            owner=owner,
+            is_accepted=None
         )
         
         event_dict = model_to_dict(new_event, exclude=['owner', 'thumbnail'])
@@ -52,8 +53,6 @@ def create_event(request):
             "username": new_event.owner.username,  #type:ignore
         }
         event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail) if new_event.thumbnail else None
-        
-        new_event.save()
         
         return JsonResponse({
                 "message": "Event created successfully",
