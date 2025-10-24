@@ -45,6 +45,14 @@
       <!-- Desktop User Section -->
       <div class="hidden md:flex items-center space-x-6">
         {% if user.is_authenticated %}
+        <div class="flex items-center gap-1">
+          <img
+            src="{% static 'image/user.png' %}"
+            alt="user"
+            class="h-6 w-auto"
+          />
+          <h1 class="text-gray-500 text-md">{{user.username}}</h1>
+        </div>
         <a
           href=""
           onclick="logoutUser(event)"
@@ -123,6 +131,14 @@
       <!-- Mobile User Section -->
       <div class="border-t border-gray-200 pt-4">
         {% if user.is_authenticated %}
+        <div class="flex items-center gap-1 mb-4">
+          <img
+            src="{% static 'image/user.png' %}"
+            alt="user"
+            class="h-6 w-auto"
+          />
+          <h1 class="text-gray-500 text-md">{{user.username}}</h1>
+        </div>
         <a
           href=""
           onclick="logoutUser(event)"
