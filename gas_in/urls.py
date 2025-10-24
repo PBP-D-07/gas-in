@@ -27,6 +27,7 @@ urlpatterns = [
     path('forum/', include('apps.forumModule.urls')),
     path('venue/', include('apps.venueModule.urls')),
     path('event-maker/', include('apps.eventMakerModule.urls')),
+    path('event/', include('apps.eventModule.urls')),
     
 ]
 

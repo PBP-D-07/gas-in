@@ -95,15 +95,16 @@
 
       if (!response.ok) {
         showToast(result.message, "", "error");
-        return;
+        return;  // ← TAMBAHKAN INI supaya stop di sini kalau error
       }
 
       showToast(result.message, "", "success");
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = result.redirect_url || "/";  // ← UBAH INI pakai redirect_url dari backend
       }, 1500);
     } catch (error) {
       console.error("Error:", error);
+      showToast("An error occurred. Please try again.", "", "error");
     }
   });
 </script>

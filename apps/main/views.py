@@ -5,13 +5,114 @@ from django.http import JsonResponse
 from apps.main.models import User
 from django.forms.models import model_to_dict
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from apps.main.models import User
 
-# Create your views here.
+@csrf_exempt
+def promote_to_admin(request):
+    """
+    API untuk promote user jadi admin.
+    Hanya bisa diakses oleh admin yang sudah ada.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
+    
+    # Cek apakah yang request adalah admin
+    if not request.user.is_authenticated:
+        return JsonResponse({'message': 'You must be logged in'}, status=401)
+    
+    if not request.user.is_admin:
+        return JsonResponse({'message': 'Only admins can promote users'}, status=403)
+    
+    username = request.POST.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({'message': 'Username is required'}, status=400)
+    
+    try:
+        user = User.objects.get(username=username)
+        
+        if user.is_admin:
+            return JsonResponse({
+                'message': f'{username} is already an admin'
+            }, status=200)
+        
+        user.is_admin = True
+        user.save()
+        
+        return JsonResponse({
+            'message': f'{username} is now an admin!',
+            'data': {
+                'username': user.username,
+                'is_admin': user.is_admin
+            }
+        }, status=200)
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'message': f'User "{username}" not found'
+        }, status=404)
+
+
+@csrf_exempt
+def demote_from_admin(request):
+    """
+    API untuk demote admin jadi user biasa.
+    Hanya bisa diakses oleh admin yang sudah ada.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({'message': 'You must be logged in'}, status=401)
+    
+    if not request.user.is_admin:
+        return JsonResponse({'message': 'Only admins can demote users'}, status=403)
+    
+    username = request.POST.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({'message': 'Username is required'}, status=400)
+    
+    # Prevent self-demotion
+    if request.user.username == username:
+        return JsonResponse({
+            'message': 'You cannot demote yourself!'
+        }, status=400)
+    
+    try:
+        user = User.objects.get(username=username)
+        
+        if not user.is_admin:
+            return JsonResponse({
+                'message': f'{username} is not an admin'
+            }, status=200)
+        
+        user.is_admin = False
+        user.save()
+        
+        return JsonResponse({
+            'message': f'{username} has been demoted to regular user',
+            'data': {
+                'username': user.username,
+                'is_admin': user.is_admin
+            }
+        }, status=200)
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'message': f'User "{username}" not found'
+        }, status=404)
+
 def show_main(request):
     return render(request, 'main.html')
 
 def show_login(request):
     return render(request, 'login.html')
+
+def show_register(request):
+    return render(request, 'register.html')
 
 @csrf_exempt
 def register_user(request):
@@ -40,6 +141,7 @@ def register_user(request):
         }, status=409)
 
     user = User.objects.create_user(username=username, password=password1)
+
     data = model_to_dict(user, fields=['id', 'username', 'email', 'is_active'])
     
     return JsonResponse({
@@ -50,9 +152,7 @@ def register_user(request):
 @csrf_exempt
 def login_user(request):
     if request.method != 'POST':
-        return JsonResponse({
-            'message': 'Invalid request method'
-        }, status=405)
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
 
     username = request.POST.get('username', '').strip()
     password = request.POST.get('password', '').strip()
@@ -61,13 +161,20 @@ def login_user(request):
 
     if user is not None:
         login(request, user)
-        return JsonResponse({
-            'message': 'Login successful!'
-        }, status=200)
+
+        if user.is_admin:
+            return JsonResponse({
+                'message': 'Login successful!',
+                'redirect_url': '/admin/'
+            }, status=200)
+        else:
+            return JsonResponse({
+                'message': 'Login successful!',
+                'redirect_url': '/'
+            }, status=200)
     else:
-        return JsonResponse({
-            'message': 'Invalid username or password'
-        }, status=401)
+        return JsonResponse({'message': 'Invalid username or password'}, status=401)
+
 
 @csrf_exempt
 def logout_user(request):

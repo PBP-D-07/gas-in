@@ -27,8 +27,8 @@ def run():
         user = User(
             id=uuid4(),
             username=u['username'],
-            is_staff=u.get('is_admin', False),
-            is_superuser=u.get('is_admin', False)
+            password=u['password'],
+            is_admin=u.get('is_admin', False)
         )
         user.set_password(u['password'])  
         user.save()
