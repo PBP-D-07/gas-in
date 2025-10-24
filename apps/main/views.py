@@ -162,7 +162,7 @@ def login_user(request):
     if user is not None:
         login(request, user)
 
-        if user.is_admin:
+        if user.is_admin: #type: ignore
             return JsonResponse({
                 'message': 'Login successful!',
                 'redirect_url': '/admin/'
