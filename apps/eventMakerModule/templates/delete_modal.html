@@ -93,6 +93,9 @@
 
         showToast(result.message, "", "success");
         hideDeleteModal();
+        setTimeout(() => {
+          window.location.href = "/event/";
+        }, 1500);
       } catch (error) {
         console.error("Error:", error);
       }
