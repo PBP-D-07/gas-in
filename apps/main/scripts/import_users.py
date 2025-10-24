@@ -11,6 +11,7 @@ def run():
         user = User.objects.create(
             id=uuid4(),
             username=u['username'],
-            password=u['password']
+            password=u['password'],
+            is_admin=u.get('is_admin', False)
         )
         print(f"✅ Added user: {user.username}")
