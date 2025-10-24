@@ -7,12 +7,10 @@
   >
     <div class="flex flex-col gap-10 w-80 max-lg:w-full">
       <h1 class="text-2xl font-semibold text-white">gas.in</h1>
-      <p class="text-wrap text-white">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui,
-        perspiciatis? Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-        Ad, officiis.
+      <p class="text-wrap text-sm text-white">
+        A sports platform that helps you discover venues, events, and community forums all in one place.
       </p>
-      <div id="icon-container" class="flex gap-4"></div>
+      <div id="icon-container" class="flex gap-2 items-center"></div>
     </div>
     <div class="flex max-lg:flex-col h-fit max-lg:gap-4 gap-12">
       <a
@@ -45,11 +43,11 @@
           <input
             type="text"
             id="message"
-            class="rounded-md max-lg:w-full focus:shadow-md focus:ring-1 focus:ring-blue-300 focus:outline-none px-1"
+            class="rounded-md max-lg:w-full focus:shadow-md focus:ring-1 focus:ring-purple-800 focus:outline-none px-1"
           />
           <button
             type="submit"
-            class="rounded-md bg-white hover:brightness-90 duration-500 hover:shadow-md transition-all h-full px-3 py-1 text-blue-400 font-semibold"
+            class="rounded-md bg-white hover:brightness-90 duration-500 hover:shadow-md transition-all h-full px-3 py-1 text-purple-700 font-semibold"
           >
             Send
           </button>
@@ -57,7 +55,7 @@
       </div>
     </div>
   </div>
-  <div class="w-full border-t-2 border-white py-4">
+  <div class="w-full border-t border-white py-4">
     <p class="text-center text-white">© 2025 gas.in. All rights reserved.</p>
   </div>
 </div>
@@ -75,9 +73,8 @@
   for (const icon of iconList) {
     const imageButton = document.createElement("a");
     imageButton.classList.add(
-      "w-10",
-      "h-10",
-      "p-1",
+      "w-auto",
+      "h-6",
       "rounded-full",
       "hover:brightness-75",
       "duration-300",
