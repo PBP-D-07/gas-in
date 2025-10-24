@@ -1,0 +1,12 @@
+[
+    {
+        "username": "BonDummy",
+        "password":"sigmaboy123",
+        "is_admin":false
+    },
+    {
+        "username": "adminGasin",
+        "password":"superawr999",
+        "is_admin":true
+    }
+]
