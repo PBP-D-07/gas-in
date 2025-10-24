@@ -1,0 +1,972 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Post Detail | Forum</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+</style>
+{% endblock meta %}
+
+{% block content %}
+<div class="detail-wrapper">
+  <div class="detail-container">
+    <!-- Back Button -->
+    <a href="{% url 'forumModule:show_main' %}" class="back-btn">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+      </svg>
+      Back to Forum
+    </a>
+
+    <!-- Post Card -->
+    <article id="post-detail" class="detail-card">
+      <div class="detail-loading">
+        <div class="spinner"></div>
+        <p>Loading post...</p>
+      </div>
+    </article>
+
+    <!-- Comment Section -->
+    <div class="comments-section">
+      <h3 class="comments-title">
+        <span>Comments</span>
+        <span id="comment-count-badge" class="count-badge">0</span>
+      </h3>
+
+      {% if user.is_authenticated %}
+      <form id="comment-form" class="comment-form">
+        {% csrf_token %}
+        <div class="comment-input-wrapper">
+          <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+          <textarea id="comment-input" placeholder="Write a comment..." rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Post Comment</button>
+      </form>
+      {% else %}
+      <div class="login-prompt">
+        <p>Please <a href="{% url 'main:login' %}">login</a> to comment</p>
+      </div>
+      {% endif %}
+      
+      <div id="comments-container" class="comments-list">
+        <div class="loading-comments">
+          <div class="spinner-sm"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit -->
+<div id="editModal" class="modal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Edit Post</h2>
+      <button id="closeEditModal" class="btn-close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <form id="editForm" class="modal-form">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="editCategory" name="category" required>
+          <option value="running">🏃 Running</option>
+          <option value="workout">💪 Workout</option>
+          <option value="nutrition">🥗 Nutrition</option>
+          <option value="event">📅 Event</option>
+          <option value="recovery">🧘 Recovery</option>
+          <option value="motivation">⚡ Motivation</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="editDescription" name="description" rows="5" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Thumbnail URL <span>(optional)</span></label>
+        <input type="url" id="editThumbnail" name="thumbnail" placeholder="https://example.com/image.jpg">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelEdit" class="btn-secondary">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const postId = "{{ post_id }}";
+const isAuthenticated = "{{ user.is_authenticated }}" === "True";
+const currentUsername = "{{ user.username }}";
+
+const categoryMeta = {
+  'running': { color: '#FF6B35', icon: '🏃', label: 'Running' },
+  'workout': { color: '#E63946', icon: '💪', label: 'Workout' },
+  'nutrition': { color: '#06A77D', icon: '🥗', label: 'Nutrition' },
+  'event': { color: '#3B82F6', icon: '📅', label: 'Event' },
+  'recovery': { color: '#14B8A6', icon: '🧘', label: 'Recovery' },
+  'motivation': { color: '#8B5CF6', icon: '⚡', label: 'Motivation' }
+};
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function timeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+window.toggleLike = async function() {
+  if (!isAuthenticated) {
+    alert("Please login to like posts!");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/forum/like/${postId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie('csrftoken'),
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const likeBtn = document.getElementById('like-btn');
+      likeBtn.querySelector('.count').textContent = data.like_count;
+      if (data.liked) {
+        likeBtn.classList.add('liked');
+      } else {
+        likeBtn.classList.remove('liked');
+      }
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
+function renderComments(comments) {
+  const container = document.getElementById('comments-container');
+  const badge = document.getElementById('comment-count-badge');
+  badge.textContent = comments.length;
+
+  if (!comments || comments.length === 0) {
+    container.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
+    return;
+  }
+
+  container.innerHTML = comments.map(c => {
+    const isYou = c.user === currentUsername;
+    return `
+      <div class="comment-item">
+        <div class="comment-avatar">${c.user.charAt(0).toUpperCase()}</div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-author">${c.user}${isYou ? ' (You)' : ''}</span>
+            <span class="comment-time">${timeAgo(c.created_at)}</span>
+          </div>
+          <p>${c.content}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadComments() {
+  try {
+    const response = await fetch(`/forum/comment/${postId}/`);
+    if (!response.ok) return [];
+    return await response.json() || [];
+  } catch (err) {
+    console.warn("Failed to fetch comments:", err);
+    return [];
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const url = `/forum/json/${postId}/`;
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Post not found");
+    const data = await response.json();
+
+    const category = categoryMeta[data.category] || categoryMeta['running'];
+    const postDetail = document.getElementById("post-detail");
+
+    postDetail.innerHTML = `
+      <div class="post-header">
+        <div class="post-author-info">
+          <div class="post-avatar">
+            <img src="/static/image/profile.png" alt="${data.owner_username}">
+          </div>
+          <div>
+            <span class="author-name">${data.owner_username || "Unknown"}</span>
+            <div class="post-meta">
+              <span class="category-badge" style="background: ${category.color}20; color: ${category.color}">
+                ${category.icon} ${category.label}
+              </span>
+              • ${timeAgo(data.created_at)}
+            </div>
+          </div>
+        </div>
+
+        {% if user.is_authenticated and is_owner %}
+        <div class="post-actions-header">
+          <button id="openEditModal" class="btn-icon edit">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+          </button>
+          <form action="{% url 'forumModule:delete_post' post.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+            {% csrf_token %}
+            <button type="submit" class="btn-icon delete">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M16 6V4.5C16 3.12 14.88 2 13.5 2h-3C9.11 2 8 3.12 8 4.5V6H3v2h1.06l.81 11.21C4.98 20.78 6.28 22 7.86 22h8.27c1.58 0 2.88-1.22 3-2.79L19.93 8H21V6h-5z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="post-body">
+        <p class="post-description">${data.description || "No description"}</p>
+        
+        ${data.thumbnail ? `
+          <img src="${data.thumbnail}" alt="Post image" class="post-image" onerror="this.style.display='none'">
+        ` : ''}
+      </div>
+
+      <div class="post-stats">
+        <button id="like-btn" onclick="toggleLike()" class="stat-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91z"/>
+          </svg>
+          <span class="count">${data.like_count || 0}</span>
+        </button>
+
+        <div class="stat-btn views">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z"/>
+          </svg>
+          <span class="count">${data.post_views || 0}</span>
+        </div>
+      </div>
+    `;
+
+    // Load comments
+    const isDummy = Array.isArray(data.comments);
+    if (isDummy) {
+      renderComments(data.comments);
+      const textarea = document.getElementById('comment-input');
+      const btn = document.querySelector('#comment-form button[type="submit"]');
+      if (textarea && btn) {
+        textarea.disabled = true;
+        btn.disabled = true;
+        btn.textContent = 'Read-only';
+      }
+    } else {
+      const comments = await loadComments();
+      renderComments(comments);
+    }
+
+    // Edit Modal
+    const modal = document.getElementById("editModal");
+    const openModal = document.getElementById("openEditModal");
+    const closeModal = document.getElementById("closeEditModal");
+    const cancelEdit = document.getElementById("cancelEdit");
+    const form = document.getElementById("editForm");
+
+    if (openModal) {
+      openModal.addEventListener("click", () => {
+        modal.classList.add("show");
+        document.getElementById("editCategory").value = data.category || "";
+        document.getElementById("editDescription").value = data.description || "";
+        document.getElementById("editThumbnail").value = data.thumbnail || "";
+      });
+    }
+
+    if (closeModal) closeModal.addEventListener("click", () => modal.classList.remove("show"));
+    if (cancelEdit) cancelEdit.addEventListener("click", () => modal.classList.remove("show"));
+
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        const res = await fetch(`/forum/edit/${postId}/`, {
+          method: "POST",
+          headers: { 
+            "X-CSRFToken": "{{ csrf_token }}", 
+            "X-Requested-With": "XMLHttpRequest" 
+          },
+          body: formData,
+        });
+
+        if (res.ok) {
+          alert("Post updated successfully!");
+          location.reload();
+        } else {
+          alert("Error updating post");
+        }
+      });
+    }
+
+  } catch (err) {
+    document.getElementById("post-detail").innerHTML = `
+      <div class="error-state">
+        <p>Error loading post: ${err.message}</p>
+      </div>
+    `;
+  }
+
+  // Comment Form
+  const commentForm = document.getElementById('comment-form');
+  if (commentForm) {
+    commentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const textarea = document.getElementById('comment-input');
+      if (!textarea || textarea.disabled) return;
+
+      const content = textarea.value.trim();
+      if (!content) return alert("Comment cannot be empty!");
+
+      try {
+        const response = await fetch(`/forum/comment/${postId}/add/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie('csrftoken'),
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `content=${encodeURIComponent(content)}`,
+        });
+
+        if (response.ok) {
+          textarea.value = "";
+          const comments = await loadComments();
+          renderComments(comments);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
+  }
+});
+</script>
+
+<style>
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(
+      to bottom, 
+      #667eea 0%,     
+      #a3bffa 50%,    
+      #ffffff 100%  
+    );
+    min-height: 100vh;
+  }
+
+  .detail-wrapper {
+    min-height: 100vh;
+    padding: 6rem 1rem 2rem 1rem; 
+  }
+
+  .detail-container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+
+  .back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-4px);
+  }
+
+  .detail-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-loading,
+  .error-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #a0aec0;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .post-author-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .post-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .post-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .author-name {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: #1a202c;
+    display: block;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #718096;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .category-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+
+  .post-actions-header {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: #f7fafc;
+    color: #718096;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .btn-icon.edit:hover {
+    background: #fef3c7;
+    color: #f59e0b;
+  }
+
+  .btn-icon.delete:hover {
+    background: #fee2e2;
+    color: #ef4444;
+  }
+
+  .post-body {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-description {
+    color: #2d3748;
+    line-height: 1.7;
+    font-size: 1.0625rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-image {
+    width: 100%;
+    border-radius: 16px;
+    max-height: 500px;
+    object-fit: cover;
+  }
+
+  .post-stats {
+    display: flex;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .stat-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #718096;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+
+  .stat-btn:hover {
+    background: #f7fafc;
+    color: #667eea;
+  }
+
+  .stat-btn.liked {
+    color: #e53e3e;
+  }
+
+  .stat-btn.liked svg {
+    fill: #e53e3e;
+  }
+
+  .stat-btn.views {
+    cursor: default;
+  }
+
+  .stat-btn.views:hover {
+    background: transparent;
+    color: #718096;
+  }
+
+  /* Comments Section */
+  .comments-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .comments-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 1.5rem;
+  }
+
+  .count-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+  }
+
+  .comment-form {
+    margin-bottom: 2rem;
+  }
+
+  .comment-input-wrapper {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .comment-input-wrapper textarea {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.2s;
+  }
+
+  .comment-input-wrapper textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .login-prompt {
+    text-align: center;
+    padding: 2rem;
+    color: #718096;
+  }
+
+  .login-prompt a {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .loading-comments {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .spinner-sm {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .no-comments {
+    text-align: center;
+    color: #a0aec0;
+    padding: 2rem;
+  }
+
+  .comment-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    transition: background 0.2s;
+  }
+
+  .comment-item:hover {
+    background: #f7fafc;
+  }
+
+  .comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .comment-content {
+    flex: 1;
+  }
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-author {
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  .comment-time {
+    color: #a0aec0;
+    font-size: 0.875rem;
+  }
+
+  .comment-content p {
+    color: #4a5568;
+    line-height: 1.6;
+  }
+
+  /* Modal (reuse from forumMain.html) */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal.show {
+    display: flex;
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideUp 0.3s ease-out;
+  }
+
+  @keyframes modalSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    color: #718096;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .btn-close:hover {
+    background: #f7fafc;
+    color: #2d3748;
+  }
+
+  .modal-form {
+    padding: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group label span {
+    color: #a0aec0;
+    font-weight: 400;
+    font-size: 0.875rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-secondary {
+    background: #f7fafc;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    background: #edf2f7;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .detail-wrapper {
+      padding: 1rem 0.5rem;
+    }
+
+    .detail-card {
+      padding: 1.5rem;
+    }
+
+    .post-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .post-actions-header {
+      align-self: flex-end;
+    }
+
+    .comments-section {
+      padding: 1.5rem;
+    }
+
+    .comment-input-wrapper {
+      flex-direction: column;
+    }
+
+    .modal-content {
+      margin: 1rem;
+    }
+  }
+
+</style>
+{% endblock content %}

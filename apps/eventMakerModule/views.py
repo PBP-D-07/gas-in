@@ -14,6 +14,7 @@ def show_edit(request, id):
 def show_detail(request, id):
     return render(request, "event_detail.html", {"event_id":id})
 
+@login_required
 def create_event(request):
     if request.method != 'POST':
         return JsonResponse({
@@ -43,8 +44,8 @@ def create_event(request):
         event_dict = model_to_dict(new_event, exclude=['owner', 'thumbnail'])
         event_dict['id'] = str(new_event.id)
         event_dict['owner'] = {
-            "id": new_event.owner.id, #type: ignore
-            "username": new_event.owner.username, #type: ignore
+            "id": new_event.owner.id, 
+            "username": new_event.owner.username, 
         }
         event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail) if new_event.thumbnail else None
         
