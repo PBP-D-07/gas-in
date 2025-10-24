@@ -4,6 +4,20 @@
 <div
   class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 max-md:px-8 flex flex-col gap-10"
 >
+  <button
+    id="back-btn"
+    class="rounded-lg bg-gradient-to-r from-indigo-700 to-purple-800 hover:brightness-90 p-0.5 overflow-hidden w-fit"
+  >
+    <div class="group py-2 px-4 flex gap-2.5 items-center">
+      <img
+        src="{% static 'image/right-arrow.png' %}"
+        alt="arrow"
+        class="invert rotate-180 w-4 h-auto group-hover:-translate-x-0.5 transition-all transform duration-300"
+      />
+      <h2 class="text-lg font-semibold text-white">Back</h2>
+    </div>
+  </button>
+
   <div class="w-full h-96 max-lg:h-72 max-md:h-60 rounded-2xl overflow-hidden">
     <img
       id="thumbnail"
@@ -111,6 +125,13 @@
 <script>
   const eventId = "{{ event_id }}";
   const user = JSON.parse(document.getElementById("user-data").textContent);
+  const backBtn = document.getElementById("back-btn");
+
+  backBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    window.location.href = `/event/`;
+  });
 
   async function editEvent() {
     window.location.href = `/event-maker/edit/${eventId}/`;
@@ -176,6 +197,5 @@
 
   document.addEventListener("DOMContentLoaded", fetchData);
 </script>
-{% include 'join_modal.html' %} 
-{% include 'delete_modal.html' %}
-{% endblock content %}
+{% include 'join_modal.html' %} {% include 'delete_modal.html' %} {% endblock
+content %}
