@@ -146,8 +146,78 @@
       "luas_bangunan": "300",
       "luas_keseluruhan": "43261",
       "periode_data": "2017"
+    },
+    {
+      "nama_fasilitas": "Tempat Yoga dan Fitness Jl. Angsana Raya No. 1 Cengkareng Timur",
+      "luas_tanah": "1200",
+      "luas_bangunan": "300",
+      "luas_keseluruhan": "1500",
+      "periode_data": "2017"
+    },
+    {
+      "nama_fasilitas": "Lapangan Stadion Pekanbaru",
+      "luas_tanah": "2500",
+      "luas_bangunan": "200",
+      "luas_keseluruhan": "2700",
+      "periode_data": "2020"
+    },
+    {
+      "nama_fasilitas": "Lapangan Padel Sudirman",
+      "luas_tanah": "3651",
+      "luas_bangunan": "54",
+      "luas_keseluruhan": "3705",
+      "periode_data": "2017"
+    },
+    {
+      "nama_fasilitas": "Lapangan Terbuka Sepeda BMX Jatipulo",
+      "luas_tanah": "10000",
+      "luas_bangunan": "404",
+      "luas_keseluruhan": "10404",
+      "periode_data": "2019"
+    },
+    {
+      "nama_fasilitas": "Lapangan Padel Jagakarsa",
+      "luas_tanah": "42961",
+      "luas_bangunan": "300",
+      "luas_keseluruhan": "43261",
+      "periode_data": "2017"
+    },
+    {
+      "nama_fasilitas": "Lapangan Voli Sudirman",
+      "luas_tanah": "4500",
+      "luas_bangunan": "400",
+      "luas_keseluruhan": "5000",
+      "periode_data": "2020"
+    },
+    {
+      "nama_fasilitas": "Lapangan Tenis Pondok Cina",
+      "luas_tanah": "4500",
+      "luas_bangunan": "300",
+      "luas_keseluruhan": "4800",
+      "periode_data": "2020"
+    },
+    {
+      "nama_fasilitas": "Lapangan Badminton Jagakarsa",
+      "luas_tanah": "3000",
+      "luas_bangunan": "400",
+      "luas_keseluruhan": "3400",
+      "periode_data": "2020"
+    },
+    {
+      "nama_fasilitas": "Lapangan Futsal Kebayoran Lama",
+      "luas_tanah": "4500",
+      "luas_bangunan": "300",
+      "luas_keseluruhan": "4800",
+      "periode_data": "2020"
+    },
+    {
+      "nama_fasilitas": "Gym dan Fitness Cengkareng",
+      "luas_tanah": "1200",
+      "luas_bangunan": "300",
+      "luas_keseluruhan": "1500",
+      "periode_data": "2017"
     }
   ],
-  "total_file": 21,
+  "total_file": 31,
   "message": "success"
 }

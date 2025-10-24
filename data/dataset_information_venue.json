@@ -137,9 +137,9 @@
     },
     {
         "category": "football",
-        "thumbnail": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjDt6EkbCYEGvi6F6ttImsL3BPuLbp5w2XjcT1bx7OmVjdGQR8AD17VNrXBCAVtCuZW580oMuNjowFraiYKCWjrqUXA2SWSCZO4GyVgZHhknfSHc_cdECM8J749_nF9Hm1BIED0_eAdubqTW1JbIEJUVZez7iekZuxPSAY68TlqbA7OzemtSKdA4lgNULoL/s4012/stadion%20taman%20sari%20jakarta.jpg",
+        "thumbnail": "https://assets.promediateknologi.id/crop/0x0:0x0/750x500/webp/photo/2022/12/23/997338120.jpg",
         "images": [
-            "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiapsPFCCYQLg0jJKX3zn0XJe2nlHXG6Ygke8snwHg4UqRnGRuXPJIGvD66-B_l-30sfoxgTq02HsiOg0wZRAhAVrg9bSzNFgRnAHCZ_Tb4JlsOLBUrrS6IBHCCVFro-hXuySOEO-BLUWbLkI_AurXpJcDL8qUVLca95ux3XELxSZWTNSQFYy0kOxBCUw0m/s3933/stadion%20taman%20sari%20mangga%20besar.jpg",
+            "https://bogor-kita.com/wp-content/uploads/2022/12/GOM-1.jpg",
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI0KWiJkMBPoZ3lmsII0rwtj0nsVOBP_8Rqg&s",
             "https://img.bolaskor.com/media/9e/9a/4f/9e9a4fe5e7c951b8619eea48113ea0d7.jpg"
         ]
@@ -148,8 +148,78 @@
         "category": "football",
         "thumbnail": "https://asset-2.tribunnews.com/tribunnews/foto/bank/images/suasana-stadion-cendrawasih-jakarta-barat.jpg",
         "images": [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM0sfF5zeP56lJjEwrNKrVhpgpNa6NRR90StLWjx6mBWmCzN5bmj7J43mNkrHs2iU-ks8&usqp=CAU",
+            "https://mediabogor.co/wp-content/uploads/2023/01/IMG-20230119-WA0223.jpg",
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQp8bB71JxzXAQiQdPn2bpM8FHZEx8vT8ylQ&s"
+        ]
+    },
+    {
+        "category": "yoga",
+        "thumbnail": "https://www.goersapp.com/blog/wp-content/uploads/2025/05/3.-Yoga-42.webp",
+        "images": [
+            "https://alatolahraga.id/wp-content/uploads/2022/03/888020210913193313.jpeg"
+        ]
+    },
+    {
+        "category": "running",
+        "thumbnail": "https://www.goersapp.com/blog/wp-content/uploads/2025/05/1.-Stadion-Gelora-Bandung-Lautan-Api-GBLA.webp",
+        "images": [
+            "https://rendystones.wordpress.com/wp-content/uploads/2013/04/stadion-bandung-lautan-api.jpg?w=640"
+        ]
+    },
+    {
+        "category": "padel",
+        "thumbnail": "https://i0.wp.com/zaloraadmin.wpcomstaging.com/wp-content/uploads/2025/04/lapangan-padel.png?resize=1024%2C529&ssl=1",
+        "images": [
+            "https://blue.kumparan.com/image/upload/fl_progressive,fl_lossy,c_fill,f_auto,q_auto:best,w_640/v1634025439/01jx9dpphphjvaper0f43hfyms.jpg"
+        ]
+    },
+    {
+        "category": "cycling",
+        "thumbnail": "https://sepeda.me/wp-content/uploads/2020/11/kemiringan-Super-elevasi-jalan-1024x496.jpg",
+        "images": [
+            "https://sepeda.me/wp-content/uploads/2020/11/Velodrome-Arena-Sepeda-Balap.jpg"
+        ]
+    },
+    {
+        "category": "padel",
+        "thumbnail": "https://d3lfgix2a8jnun.cloudfront.net/blog-files/594/wGEKFFG8Z7znchPFhhy68uFjBGY0rWLxQb36EIIr.jpg",
+        "images": [
+            "https://d3lfgix2a8jnun.cloudfront.net/custom-assets/13/padel-di-jakbar_68be8e4a72374-0XgcoRfhEOVfylatg7OpmrB1G1CJArtYbqE4cECb.jpg"
+        ]
+    },
+    {
+        "category": "volleyball",
+        "thumbnail": "https://kuyou.id/content/images/voli-20220203122523.jpg",
+        "images": [
+            "https://kuyou.id/content/images/fs-20220203114445.jpg"
+        ]
+    },
+    {
+        "category": "other",
+        "thumbnail": "https://asset.ayo.co.id/image/venue/172595199651378.image_cropper_1725951979024.jpg",
+        "images": [
+            "https://asset.ayo.co.id/image/venue-field/171981782812582.image_cropper_1719817778921.jpg"
+        ]
+    },
+    {
+        "category": "badminton",
+        "thumbnail": "https://admin.saraga.id/storage/images/2_1702871103.jpeg",
+        "images": [
+            "https://admin.saraga.id/storage/images/1_1704883125.jpeg"
+        ]
+    },
+    {
+        "category": "futsal",
+        "thumbnail": "https://konten.usu.ac.id/storage/satker/0/statis/fasilitas/lapfutsal_1.webp",
+        "images": [
+            "https://stietribhakti.ac.id/wp-content/uploads/2022/03/DSC_1167-scaled.jpg"
+        ]
+    },
+    {
+        "category": "other",
+        "thumbnail": "https://cove-blog-id.sgp1.cdn.digitaloceanspaces.com/cove-blog-id/2024/03/anytime-fitness.webp",
+        "images": [
+            "https://cdn.shopify.com/s/files/1/0849/0024/9883/files/unnamed_832fb1c1-a75e-4136-be61-9f86938d1e29_480x480.jpg?v=1714013491"
         ]
     }
 ]
