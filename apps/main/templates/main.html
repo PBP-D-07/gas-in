@@ -1,5 +1,102 @@
-{% extends 'base.html' %} {% block meta %}
-<title>Home</title>
-{% endblock meta %} {% block content %} 
-<div class="relative min-h-screen w-full"></div>
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>gas.in — Find Sports Venues Near You</title>
+{% endblock meta %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="pt-16">
+    <section class="bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 text-white flex items-center justify-center" style="height: calc(100vh - 4rem);">
+        <div class="max-w-6xl mx-auto px-6 py-24 lg:py-32 text-center">
+            <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">Find and Book Sports Events Near You</h1>
+            <p class="mt-4 text-lg sm:text-xl opacity-90 max-w-2xl mx-auto">Search local futsal courts, badminton halls, basketball courts, and more! Quickly compare and contact the venue owner to book.</p>
+            <div class="mt-8 flex items-center justify-center gap-4">
+                <a href="#about" class="inline-block bg-white text-blue-700 font-semibold px-6 py-3 rounded shadow hover:scale-105 transition-transform">Get Started!</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About / What is gas.in -->
+    <section id="about" class="py-12 bg-gray-50" style="scroll-margin-top: 4rem;">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-center mb-6">What is gas.in?</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">gas.in helps you discover local sports venues, see photos and essential details, and contact the owner to book — all in one place.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-700">📍</div>
+                        <h3 class="text-lg font-semibold">Find Venues Nearby</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Search venues by location and sport — quickly filter to find the right place for your game.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-700">📸</div>
+                        <h3 class="text-lg font-semibold">See Photos & Details</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">View multiple images, location, and owner contact info before you book.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-700">📞</div>
+                        <h3 class="text-lg font-semibold">Contact Owners</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Reach owners directly via WhatsApp links or the contact number listed on the venue page.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-purple-100 text-purple-700">➕</div>
+                        <h3 class="text-lg font-semibold">Add Your Venue</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Own a venue? Add it to gas.in with multiple images and let people find and book your space.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-12 bg-white">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-center mb-6">Features</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Explore the key features that make our platform the best choice for finding and booking sports venues.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-50 p-6 rounded-lg shadow text-center">
+                    <svg class="mx-auto h-10 w-10 text-blue-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <h3 class="text-lg font-semibold mb-2">Events</h3>
+                    <p class="text-gray-600 text-sm mb-4">Discover and join upcoming sports events. Filter by location and category to find the right match.</p>
+                    <a href="{% url 'eventModule:show_discover' %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Go to Events</a>
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-lg shadow text-center">
+                    <svg class="mx-auto h-10 w-10 text-green-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                    <h3 class="text-lg font-semibold mb-2">Venues</h3>
+                    <p class="text-gray-600 text-sm mb-4">Browse venues with photos, contact info, and quick links to message owners for bookings.</p>
+                    <a href="{% url 'venue:show_venue' %}" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Browse Venues</a>
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-lg shadow text-center">
+                    <svg class="mx-auto h-10 w-10 text-purple-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6"/></svg>
+                    <h3 class="text-lg font-semibold mb-2">Forum</h3>
+                    <p class="text-gray-600 text-sm mb-4">Ask questions, request recommendations, and share tips with other players and venue owners.</p>
+                    <a href="{% url 'forumModule:show_main' %}" class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Visit Forum</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="py-12 bg-blue-600 text-white">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h3 class="text-xl font-bold">Ready to find a venue?</h3>
+            <p class="mt-2 mb-4 opacity-90">Get started by exploring our available venues.</p>
+            <a href="{% url 'venue:show_venue' %}" class="inline-block bg-white text-blue-700 font-semibold px-6 py-3 rounded shadow">Explore Venues</a>
+        </div>
+    </section>
+</div>
+
 {% endblock content %}
