@@ -53,6 +53,8 @@ def create_event(request):
         }
         event_dict['thumbnail'] = settings.MEDIA_URL + str(new_event.thumbnail) if new_event.thumbnail else None
         
+        new_event.save()
+        
         return JsonResponse({
                 "message": "Event created successfully",
                 "data": event_dict
