@@ -60,7 +60,7 @@ def create_event(request):
             }, status=201)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"message": str(e)}, status=500)
 
 def get_all_event(request):
     events = Event.objects.all()
