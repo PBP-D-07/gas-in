@@ -31,7 +31,14 @@ SECRET_KEY = 'django-insecure-5n&x*#h$-6o@!ro%c#pnexyywp9-az*rg6^f8t)5&mpsqfd3f0
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "nezzaluna-azzahra-gas-in.pbp.cs.ui.ac.id"]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "nezzaluna-azzahra-gas-in.pbp.cs.ui.ac.id", "10.0.2.2"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://nezzaluna-azzahra-gas-in.pbp.cs.ui.ac.id/"
@@ -52,7 +59,8 @@ INSTALLED_APPS = [
     'apps.eventModule',
     'apps.forumModule',
     'apps.venueModule',
-    'django_extensions'
+    'django_extensions',
+    'corsheaders'
 ]
 
 AUTH_USER_MODEL = 'main.User'
@@ -66,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'gas_in.urls'
