@@ -41,62 +41,28 @@ def register(request):
 
 @csrf_exempt
 def login(request):
-    if request.method != 'POST':
-        return JsonResponse({
-            "status": False,
-            "message": "Invalid request method."
-        }, status=400)
-
-    try:
-        if request.headers.get('Content-Type') == 'application/json':
-            data = json.loads(request.body)
-        else :
-            data = request.POST
-
-        username = data.get('username')
-        password = data.get('password')
-
-        if not username or not password:
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            auth_login(request, user)
+            # Login status successful.
+            return JsonResponse({
+                "username": user.username,
+                "status": True,
+                "message": "Login successful!",
+                "is_admin": False
+                # Add other data if you want to send data to Flutter.
+            }, status=200)
+        else:
             return JsonResponse({
                 "status": False,
-                "message": "Username and password are required."
-            }, status=400)
-
-        user = authenticate(username=username, password=password)
-
-        if user is None:
-            return JsonResponse({
-                "status": False,
-                "message": "Login failed, please check your username or password."
+                "message": "Login failed, account is disabled."
             }, status=401)
 
-        if not user.is_active:
-            return JsonResponse({
-                "status": False,
-                "message": "Your account is disabled."
-            }, status=401)
-
-        auth_login(request, user)
-
-        response = JsonResponse({
-            "status": True,
-            "message": "Login successful!",
-            "username": user.username,
-            "is_admin": user.is_admin,  
-        })
-
-        response.set_cookie(
-            key='sessionid',
-            value=request.session.session_key,
-            httponly=True,
-            samesite='None',
-            secure=True
-        )
-
-        return response
-
-    except Exception as e:
+    else:
         return JsonResponse({
             "status": False,
-            "message": f"Error: {str(e)}"
-        }, status=500)
+            "message": "Login failed, please check your username or password."
+        }, status=401)
