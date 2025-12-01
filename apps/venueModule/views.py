@@ -13,6 +13,8 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
+import json
+import requests
 
 def show_venue(request):
     venue_list = Venue.objects.all()
@@ -32,6 +34,33 @@ def venue_detail(request, venue_id):
 
     return render(request, "venue_detail.html", context)
 
+
+@csrf_exempt
+def create_venue_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        name = strip_tags(data.get("name", ""))
+        description = strip_tags(data.get("description", ""))
+        location = strip_tags(data.get("location", ""))
+        contact_number = strip_tags(data.get("contact_number", ""))
+        category = data.get("category", "")
+        thumbnail = data.get("thumbnail", "")
+        owner = request.user if request.user.is_authenticated else None
+
+        new_venue = Venue(
+            name=name,
+            description=description,
+            location=location,
+            category=category,
+            thumbnail=thumbnail,
+            contact_number=contact_number,
+            owner=owner,
+        )
+        new_venue.save()
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+
 # mengembalikan data dalam bentuk XML
 def show_xml_venue(request):
     venue_list = Venue.objects.all()
@@ -43,7 +72,7 @@ def show_json_venue(request):
     venue_list = Venue.objects.prefetch_related('images').all()
     data = []
     for venue in venue_list:
-        images = [img.image for img in venue.images.all()] #type: ignore
+        images = [img.image for img in venue.images.all()]
         data.append({
             'id': str(venue.id),
             'name': venue.name,
@@ -55,7 +84,7 @@ def show_json_venue(request):
             'owner_username': venue.owner.username if venue.owner else None,
             'category': venue.category,
             'created_at': venue.created_at.isoformat(),
-            'owner_id': venue.owner_id, #type: ignore
+            'owner_id': venue.owner_id,
         })
 
     return JsonResponse(data, safe=False)
@@ -73,7 +102,7 @@ def show_xml_by_id_venue(request, venue_id):
 def show_json_by_id_venue(request, venue_id):
     try:
         venue = Venue.objects.prefetch_related('images').get(pk=venue_id)
-        images = [img.image for img in venue.images.all()] #type: ignore
+        images = [img.image for img in venue.images.all()]
         data = {
             'id': str(venue.id),
             'name': venue.name,
@@ -85,7 +114,7 @@ def show_json_by_id_venue(request, venue_id):
             'owner_username': venue.owner.username if venue.owner else None,
             'category': venue.category,
             'created_at': venue.created_at.isoformat(),
-            'owner_id': venue.owner_id, #type: ignore
+            'owner_id': venue.owner_id,
         }
         return JsonResponse(data)
     except Venue.DoesNotExist:

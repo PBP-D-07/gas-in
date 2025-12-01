@@ -1,4 +1,4 @@
-from apps.main.views import show_main, register_user, login_user, get_all_user,show_login, logout_user, show_register, promote_to_admin, demote_from_admin
+from apps.main.views import show_main, register_user, login_user, get_all_user,show_login, logout_user, show_register, promote_to_admin, demote_from_admin, proxy_image
 from django.urls import path
 
 app_name = 'main'
@@ -13,4 +13,5 @@ urlpatterns = [
     path('users/', get_all_user, name='get_all_user'),
     path('api/promote-admin/', promote_to_admin, name='promote_admin'),
     path('api/demote-admin/', demote_from_admin, name='demote_admin'),
+    path('api/proxy-image/', proxy_image, name='proxy_image'),
 ]

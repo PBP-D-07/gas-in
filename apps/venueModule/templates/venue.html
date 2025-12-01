@@ -8,7 +8,7 @@
 {% block content %}
 
 <div class="pt-16">
-  <!-- Hero / Landing (full viewport minus navbar) -->
+  <!-- Hero / Landing -->
   <section class="w-full bg-gradient-to-r from-indigo-700 to-purple-800 text-white flex items-center justify-center" style="min-height: calc(100vh - 4rem);">
     <div class="mx-auto px-4 w-full max-w-4xl flex flex-col items-center justify-center text-center">
       <h1 class="text-5xl font-extrabold mb-4">Found The Best Sports Venues In Your Area with gas.in!</h1>
@@ -60,20 +60,20 @@ const errorMessage = document.getElementById('error');
 const emptyState = document.getElementById('empty');
 const venueGridContainer = document.getElementById('grid');
 
-// Show/hide page sections
+// show/hide page sections
 function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
   loadingSpinner.classList.toggle('hidden', !showLoading);
   errorMessage.classList.toggle('hidden', !showError);
   emptyState.classList.toggle('hidden', !showEmpty);
   venueGridContainer.classList.toggle('hidden', !showGrid);
   
-  // Add container + grid classes when showing grid so spacing and max width are preserved
+  // add container & grid classes when showing grid so spacing and max width are preserved
   if (showGrid) {
     venueGridContainer.className = 'mx-auto p-4 mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10';
   }
 }
 
-// Get readable category name
+// get readable category name
 function getReadableCategoryName(categoryCode) {
   const categoryMapping = {
     running: 'Lari',
@@ -90,7 +90,7 @@ function getReadableCategoryName(categoryCode) {
   return categoryMapping[categoryCode] || categoryCode;
 }
 
-// Create venue card element
+// create venue card element
 function buildVenueCardElement(item) {
     const article = document.createElement('article');
     article.className = 'bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
@@ -138,7 +138,7 @@ function buildVenueCardElement(item) {
     return article;
 }
 
-// Render all venue cards
+// render all venue cards
 function renderAllVenueCards(venueItems) {
   venueGridContainer.innerHTML = '';
   venueItems.forEach(venueItem => {
@@ -147,7 +147,7 @@ function renderAllVenueCards(venueItems) {
   });
 }
 
-// Fetch venue data from server
+// fetch venue data from server
 async function fetchVenuesFromServer() {
   try {
     displayPageSection({ showLoading: true });
@@ -156,7 +156,7 @@ async function fetchVenuesFromServer() {
       headers: { 'Accept': 'application/json' },
     });
 
-    // Handle non-2xx responses and show an error message
+    // handle non-2xx responses and show an error message
     if (!response.ok) {
       let serverText = '';
       try {
@@ -173,12 +173,12 @@ async function fetchVenuesFromServer() {
 
     const venueData = await response.json();
 
-    // If no venues returned, show empty state
+    // if no venues returned, show empty state
     if (!venueData || (Array.isArray(venueData) && venueData.length === 0)) {
       venueGridContainer.innerHTML = '';
       displayPageSection({ showEmpty: true });
     } else {
-      // Render all received venues directly
+      // render all received venues directly
       renderAllVenueCards(venueData || []);
       displayPageSection({ showGrid: true });
     }
@@ -193,12 +193,12 @@ function initializeVenuePage() {
   fetchVenuesFromServer();
 }
 
-// Start application
+// start application
 initializeVenuePage();
 
-// Add event listener to detect new venues
+// add event listener to detect new venues
 document.addEventListener('venueAdded', function() {
-    // Refresh venue data without page reload
+    // refresh venue data without page reload
     fetchVenuesFromServer();
 });
 

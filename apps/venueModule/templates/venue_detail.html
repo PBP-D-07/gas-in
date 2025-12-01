@@ -25,7 +25,7 @@
     <p class="text-gray-500">Please try again later.</p>
   </div>
 
-  <!-- Product Content (Hidden initially) -->
+  <!-- Product Content (hidden initially) -->
   <div id="product-content" class="bg-white rounded-lg shadow-lg overflow-hidden hidden mt-4">
     <div class="md:flex md:items-stretch">
       <div class="md:w-1/2">
@@ -38,7 +38,7 @@
             class="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
           />
 
-          <!-- Prev / Next controls -->
+          <!-- prev/next controls -->
           <button id="carousel-prev" aria-label="Previous image" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 shadow">
             ‹
           </button>
@@ -46,7 +46,7 @@
             ›
           </button>
 
-          <!-- Thumbnails (horizontal strip) -->
+          <!-- thumbnails(horizontal strip) -->
           <div id="thumbnails" class="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/40 to-transparent p-2 flex gap-2 overflow-x-auto">
             <!-- thumbnails injected here -->
           </div>
@@ -124,7 +124,7 @@ const errorState = document.getElementById('error-state');
 const productContent = document.getElementById('product-content');
 const badgesContainer = document.getElementById('badges-container');
 const productName = document.getElementById('product-name');
-// Venue-specific fields
+// venue-specific fields
 const venueLocation = document.getElementById('venue-location');
 const venueContact = document.getElementById('venue-contact');
 const venueDescription = document.getElementById('venue-description');
@@ -138,14 +138,14 @@ const thumbnailsContainer = document.getElementById('thumbnails');
 const carouselPrev = document.getElementById('carousel-prev');
 const carouselNext = document.getElementById('carousel-next');
 
-// Show/hide page sections
+// show/hide page sections
 function showState(state) {
     loadingState.classList.toggle('hidden', state !== 'loading');
     errorState.classList.toggle('hidden', state !== 'error');
     productContent.classList.toggle('hidden', state !== 'ready');
 }
 
-// Get readable category name
+// get readable category name
 function getCategoryLabel(categoryCode) {
   const categoryMapping = {
     'running': 'Lari',
@@ -162,20 +162,20 @@ function getCategoryLabel(categoryCode) {
   return categoryMapping[categoryCode] || categoryCode;
 }
 
-// Render product content
+// render product content
 function renderProduct(product) {
-  // Treat `product` as venue payload from API
+  // treat "product" as venue payload from API
   productName.textContent = product.name;
   document.title = `${product.name} - gas.in`;
 
-  // Set badges
+  // set badges
   badgesContainer.innerHTML = '';
   const categoryBadge = document.createElement('span');
   categoryBadge.className = 'bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold mr-2';
   categoryBadge.textContent = getCategoryLabel(product.category);
   badgesContainer.appendChild(categoryBadge);
 
-  // Show acceptance/verification badge if venue is accepted
+  // show acceptance/verification badge if venue is accepted
   if (product.is_accepted) {
     const acceptedBadge = document.createElement('span');
     acceptedBadge.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold';
@@ -183,13 +183,13 @@ function renderProduct(product) {
     badgesContainer.appendChild(acceptedBadge);
   }
 
-  // Location / contact
+  // location / contact
   venueLocation.textContent = product.location || '-';
-  // Render contact as WhatsApp link (clean non-digits)
+  // render contact as WhatsApp link (clean non-digits)
   const rawContact = product.contact_number || '';
   const cleaned = rawContact.replace(/\D/g, '');
   if (cleaned.length > 0) {
-    // build wa.me link; note: wa.me expects country code, user's number should include it
+    // build wa.me link
     const a = document.createElement('a');
     a.href = `https://wa.me/${cleaned}`;
     a.target = '_blank';
@@ -202,13 +202,13 @@ function renderProduct(product) {
     venueContact.textContent = '-';
   }
 
-  // Description
+  // description
   venueDescription.textContent = product.description || 'No description available';
 
-  // Owner (depends on API; try owner_username then owner fields)
+  // owner
   venueOwner.textContent = product.owner_username || product.owner || 'Unknown';
 
-  // Created date
+  // created date
   if (product.created_at) {
     try {
       const created = new Date(product.created_at);
@@ -300,7 +300,7 @@ function renderProduct(product) {
   }
 }
 
-// Fetch product detail
+// fetch product detail
 async function loadProductDetail() {
     try {
         showState('loading');
