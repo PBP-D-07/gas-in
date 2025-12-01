@@ -16,6 +16,7 @@ from django.utils.html import strip_tags
 import json
 import requests
 
+# menampilkan semua venue
 def show_venue(request):
     venue_list = Venue.objects.all()
 
@@ -25,6 +26,7 @@ def show_venue(request):
 
     return render(request, 'venue.html', context)
 
+# menampilkan detail venue berdasarkan ID
 def venue_detail(request, venue_id):
     venue = get_object_or_404(Venue, pk=venue_id)
 
@@ -34,7 +36,7 @@ def venue_detail(request, venue_id):
 
     return render(request, "venue_detail.html", context)
 
-
+# mem-post data dari flutter
 @csrf_exempt
 def create_venue_flutter(request):
     if request.method == 'POST':
@@ -56,6 +58,7 @@ def create_venue_flutter(request):
             contact_number=contact_number,
             owner=owner,
         )
+
         new_venue.save()
         return JsonResponse({"status": "success"}, status=200)
     else:
