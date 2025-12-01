@@ -52,7 +52,7 @@ def login(request):
                 "username": user.username,
                 "status": True,
                 "message": "Login successful!",
-                "is_admin": False
+                "is_admin": user.is_admin
                 # Add other data if you want to send data to Flutter.
             }, status=200)
         else:
