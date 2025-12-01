@@ -26,7 +26,8 @@ urlpatterns = [
     path('event/', include('apps.eventModule.urls')),
     path('forum/', include('apps.forumModule.urls')),
     path('venue/', include('apps.venueModule.urls')),
-    path('event-maker/', include('apps.eventMakerModule.urls')),    
+    path('event-maker/', include('apps.eventMakerModule.urls')),   
+    path('auth/', include('apps.authentication.urls')), 
 ]
 
 if settings.DEBUG or not settings.PRODUCTION:
