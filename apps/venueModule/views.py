@@ -1,7 +1,7 @@
 import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 # from main.forms import ProductForm
-from apps.venueModule.models import Venue
+from apps.venueModule.models import Venue, VenueImage
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.urls import reverse
@@ -40,29 +40,55 @@ def venue_detail(request, venue_id):
 @csrf_exempt
 def create_venue_flutter(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        name = strip_tags(data.get("name", ""))
-        description = strip_tags(data.get("description", ""))
-        location = strip_tags(data.get("location", ""))
-        contact_number = strip_tags(data.get("contact_number", ""))
-        category = data.get("category", "")
-        thumbnail = data.get("thumbnail", "")
-        owner = request.user if request.user.is_authenticated else None
+        try:
+            data = json.loads(request.body)
+            name = strip_tags(data.get("name", ""))
+            description = strip_tags(data.get("description", ""))
+            location = strip_tags(data.get("location", ""))
+            contact_number = strip_tags(data.get("contact_number", ""))
+            category = data.get("category", "other")
+            thumbnail = data.get("thumbnail", "")
+            owner = request.user if request.user.is_authenticated else None
+            images = data.get("images", [])  # Expecting list of image URLs/paths
 
-        new_venue = Venue(
-            name=name,
-            description=description,
-            location=location,
-            category=category,
-            thumbnail=thumbnail,
-            contact_number=contact_number,
-            owner=owner,
-        )
+            # Validate required fields
+            if not name or not location:
+                return JsonResponse({"status": "error", "message": "Name and location are required"}, status=400)
 
-        new_venue.save()
-        return JsonResponse({"status": "success"}, status=200)
+            # Create venue
+            new_venue = Venue(
+                name=name,
+                description=description,
+                location=location,
+                category=category,
+                thumbnail=thumbnail,
+                contact_number=contact_number,
+                owner=owner,
+            )
+            new_venue.save()
+
+            # Create related images
+            if images and isinstance(images, list):
+                for idx, img_url in enumerate(images):
+                    if img_url:  # Skip empty strings
+                        VenueImage.objects.create(
+                            venue=new_venue,
+                            image=img_url,
+                            order=idx
+                        )
+
+            return JsonResponse({
+                "status": "success",
+                "venue_id": str(new_venue.id),
+                "message": "Venue created successfully"
+            }, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
     else:
-        return JsonResponse({"status": "error"}, status=401)
+        return JsonResponse({"status": "error", "message": "Only POST method allowed"}, status=405)
 
 # mengembalikan data dalam bentuk XML
 def show_xml_venue(request):
