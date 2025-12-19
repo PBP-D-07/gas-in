@@ -19,6 +19,11 @@ class EventViewsTestCase(TestCase):
             category="running",
             owner=self.user
         )
+        
+    # Event Model
+    def test_event_name(self):
+        response = str(self.event)
+        self.assertEqual(response, "Test Event")
 
     # View render
     def test_show_create_renders_template(self):
@@ -38,7 +43,16 @@ class EventViewsTestCase(TestCase):
 
     # create_event
     def test_create_event_requires_login(self):
-        response = self.client.post(reverse("eventMakerModule:create_event"))
+        response = self.client.post(reverse("eventMakerModule:create_event"), {
+            "name": "New Event",
+            "description": "New Desc",
+            "date": "2025-10-21T08:23",
+            "location": "Bandung",
+            "category": "running",
+            "thumbnail": ""
+        })
+        data = json.loads(response.content)
+        self.assertIn("You must be logged in to create an event", data["message"])
         self.assertEqual(response.status_code, 401)
 
     def test_create_event_success(self):
@@ -48,15 +62,15 @@ class EventViewsTestCase(TestCase):
         response = self.client.post(reverse("eventMakerModule:create_event"), {
             "name": "New Event",
             "description": "New Desc",
-            "date": "2025-10-21",
+            "date": "2025-10-21T09:12",
             "location": "Bandung",
             "category": "running",
             "thumbnail": image
         })
 
-        self.assertEqual(response.status_code, 201)
         data = json.loads(response.content)
         self.assertIn("Event created successfully", data["message"])
+        self.assertEqual(response.status_code, 201)
 
     def test_create_event_invalid_method(self):
         response = self.client.get(reverse("eventMakerModule:create_event"))

@@ -1,17 +1,35 @@
 {% extends 'base.html' %} {% load static %} {% block meta %}
-<title>gas.in | Event Maker</title>
+<title>gas.in | Create Event</title>
 {% endblock meta %} {% block content%}
 <div
-  class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10"
+  class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10 lg:gap-14"
 >
-  <div class="flex flex-col gap-2">
-    <h2 class="text-3xl max-md:text-2xl max-md:text-center font-bold">
+  <button
+    id="back-btn"
+    class="rounded-lg bg-gradient-to-r from-indigo-700 to-purple-800 hover:brightness-90 p-0.5 overflow-hidden w-fit"
+  >
+    <div class="group py-2 px-4 flex gap-2.5 items-center">
+      <img
+        src="{% static 'image/right-arrow.png' %}"
+        alt="arrow"
+        class="invert rotate-180 w-4 h-auto group-hover:-translate-x-0.5 transition-all transform duration-300"
+      />
+      <h2 class="text-lg font-semibold text-white">Back</h2>
+    </div>
+  </button>
+
+  <div class="flex flex-col gap-3">
+    <h2
+      class="text-5xl max-lg:text-3xl max-md:text-2xl max-lg:text-center font-bold"
+    >
       Create New Event
     </h2>
-    <p class="text-gray-500 max-md:text-center">Let's create event yourself</p>
+    <p class="text-gray-500 text-xl max-lg:text-lg max-lg:text-center">
+      Let's create your own event!
+    </p>
   </div>
 
-  <div class="w-full p-8 rounded-lg border-2 border-gray-500">
+  <div class="w-full p-8 rounded-xl shadow-2xl border-1">
     <form
       id="event-form"
       action="{% url 'eventMakerModule:create_event' %}"
@@ -30,7 +48,7 @@
               id="name"
               name="name"
               required
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-800 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             />
           </div>
 
@@ -44,7 +62,7 @@
               id="description"
               name="description"
               rows="3"
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-800 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             ></textarea>
           </div>
 
@@ -53,11 +71,11 @@
               >Date</label
             >
             <input
-              type="date"
+              type="datetime-local"
               id="date"
               name="date"
               required
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-800 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             />
           </div>
 
@@ -70,7 +88,7 @@
               id="location"
               name="location"
               required
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-800 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             />
           </div>
 
@@ -81,17 +99,18 @@
             <select
               id="category"
               name="category"
-              class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg"
+              class="bg-white border-purple-800 focus:shadow-xl focus:ring-1 focus:ring-purple-200 border-2 rounded-lg py-2 px-2 focus:outline-none text-lg"
             >
               <option value="running">Lari</option>
               <option value="badminton">Badminton</option>
               <option value="football">Sepak Bola</option>
+              <option value="futsal">Futsal</option>
               <option value="basketball">Basket</option>
               <option value="cycling">Sepeda</option>
               <option value="volleyball">Voli</option>
               <option value="yoga">Yoga</option>
               <option value="padel">Padel</option>
-              <option value="other">Lainnya</option>
+              <option value="other" selected>Lainnya</option>
             </select>
           </div>
         </div>
@@ -104,7 +123,7 @@
             <label
               for="thumbnail"
               id="thumbnail-label"
-              class="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-gray-400 rounded-xl cursor-pointer hover:bg-gray-200 transition relative overflow-hidden"
+              class="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-purple-800 rounded-xl cursor-pointer hover:bg-gray-200 transition relative overflow-hidden"
             >
               <div
                 id="thumbnail-placeholder"
@@ -133,7 +152,7 @@
                 src=""
                 alt="preview"
                 class="hidden absolute w-full h-full object-cover"
-              ></img>
+              />
             </label>
 
             <input
@@ -152,7 +171,7 @@
     <button
       type="submit"
       form="event-form"
-      class="rounded-lg bg-gray-100 text-2xl max-md:text-xl font-semibold px-5 py-3 max-md:px-3 max-md:py-2"
+      class="rounded-xl bg-gradient-to-r from-indigo-700 to-purple-800 hover:shadow-xl hover:-translate-y-0.5 duration-300 text-white hover:brightness-90 transform transition-all text-2xl max-md:text-xl font-semibold px-5 py-3 max-md:px-3 max-md:py-2"
     >
       Create Event
     </button>
@@ -166,13 +185,14 @@
   const placeholder = document.getElementById("thumbnail-placeholder");
   const filenameDisplay = document.getElementById("thumbnail-filename");
   const fileIcon = document.getElementById("file-icon");
+  const backBtn = document.getElementById("back-btn");
 
   thumbnailInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
 
     if (file) {
       placeholder.classList.add("hidden");
-      thumbnailLabel.classList.remove("border-dashed")
+      thumbnailLabel.classList.remove("border-dashed");
 
       const reader = new FileReader();
       reader.onload = function (event) {
@@ -182,7 +202,7 @@
       reader.readAsDataURL(file);
     } else {
       placeholder.classList.remove("hidden");
-      thumbnailLabel.classList.add("border-dashed")
+      thumbnailLabel.classList.add("border-dashed");
       thumbnailPreview.setAttribute("src", "");
       thumbnailPreview.classList.add("hidden");
     }
@@ -194,21 +214,50 @@
     const formData = new FormData(form);
 
     try {
-      const response = await fetch(
-        "/event-maker/api/create/",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch("/event-maker/api/create/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie('csrftoken'),
+        },
+        body: formData,
+        credentials: "include",
+      });
 
       const result = await response.json();
-      if (result.ok) {
-        window.location.href = "";
+
+      if (!response.ok) {
+        showToast(result.message, "", "error");
+        return;
       }
+
+      showToast(result.message, "", "success");
+      setTimeout(() => {
+        window.location.href = "/event/";
+      }, 1500);
     } catch (error) {
       console.error("Error:", error);
     }
   });
+
+  backBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    window.location.href = `/event/`;
+  });
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
 </script>
 {% endblock content %}

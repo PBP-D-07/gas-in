@@ -9,7 +9,6 @@
   >
     <!-- Modal header -->
     <div class="flex items-center justify-between pb-3">
-      <h3 class="text-xl font-semibold text-gray-900">Join Event</h3>
       <button
         type="button"
         class="text-gray-400 hover:text-gray-700"
@@ -21,7 +20,7 @@
 
     <!-- Modal body -->
     <div class="py-6 text-center">
-      <p class="text-gray-700 text-base mb-3">
+      <p class="text-gray-700 text-md mb-3">
         Are you sure you want to join this event?
       </p>
     </div>
@@ -31,16 +30,16 @@
       <button
         type="button"
         onclick="hideJoinModal()"
-        class="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-all"
+        class="px-3 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-all"
       >
-        No
+        Cancel
       </button>
       <button
         type="button"
         id="confirmJoinButton"
-        class="px-5 py-2 bg-blue-400 text-white rounded-md font-medium hover:brightness-90 transition-all"
+        class="px-3 py-2 bg-blue-400 hover:bg-blue-500 text-white rounded-md font-medium transition-all"
       >
-        Yes
+        Join
       </button>
     </div>
   </div>
@@ -83,25 +82,16 @@
           },
         });
 
-        if (response.ok) {
-          alert("You successfully joined this event");
-          hideJoinModal();
-          window.location.href = "";
-        } else {
-          const data = await response.json();
-          alert(`Error: ${data.message}`);
+        const result = await response.json();
+
+        if (!response.ok) {
+          showToast(result.message, "", "error");
+          return;
         }
+        showToast(result.message, "", "success");
+        hideJoinModal();
       } catch (error) {
-        alert("Error: " + error);
+        console.error("Error:", error);
       }
     });
-
-  // Utility: ambil CSRF token dari cookie
-  function getCookie(name) {
-    const cookieValue = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(name + "="))
-      ?.split("=")[1];
-    return cookieValue ? decodeURIComponent(cookieValue) : null;
-  }
 </script>

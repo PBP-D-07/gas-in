@@ -1,0 +1,193 @@
+[
+    {
+      "id": 1,
+      "description": "FitRun Community bakal ngadain lari bareng di CFD Sudirman minggu ini jam 6 pagi! Rutenya dari HI sampai Bundaran Senayan, yuk gabung biar makin semangat 💪",
+      "thumbnail": "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800",
+      "category": "event",
+      "post_views": 142,
+      "created_at": "2025-10-20T06:00:00Z",
+      "like_count": 58,
+      "comments": [
+        {
+          "user": "rani_fit",
+          "content": "Asli seru banget minggu lalu! Minggu ini harus ikut lagi 😍",
+          "created_at": "2025-10-20T06:30:00Z"
+        },
+        {
+          "user": "agus.runner",
+          "content": "Siap gas! Sekalian pemanasan buat 10K bulan depan nih 🏃‍♂️",
+          "created_at": "2025-10-20T06:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Tips: Setelah lari, jangan langsung duduk ya! Lakuin *cool down* 5-10 menit biar otot nggak tegang dan pemulihan lebih cepat 🔥",
+      "thumbnail": null,
+      "category": "tips",
+      "post_views": 98,
+      "created_at": "2025-10-21T08:30:00Z",
+      "like_count": 41,
+      "comments": [
+        {
+          "user": "fit_tania",
+          "content": "Dulu aku sering skip cool down, sekarang udah kerasa bedanya banget!",
+          "created_at": "2025-10-21T08:45:00Z"
+        },
+        {
+          "user": "michael_jog",
+          "content": "Aku biasanya tambah foam rolling dikit, bantu banget loh!",
+          "created_at": "2025-10-21T09:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Open invite! Badminton bareng komunitas FitSport di GOR Cempaka Putih, Sabtu jam 8 pagi. Semua level boleh ikut 🏸",
+      "thumbnail": "https://images.unsplash.com/photo-1585790050230-2a682d7375a0?w=800",
+      "category": "invite",
+      "post_views": 75,
+      "created_at": "2025-10-22T09:00:00Z",
+      "like_count": 36,
+      "comments": [
+        {
+          "user": "aldi_active",
+          "content": "Aku ikut ya! Lama banget nggak main 😆",
+          "created_at": "2025-10-22T09:20:00Z"
+        },
+        {
+          "user": "rani_fit",
+          "content": "Gas! Bawa raket sendiri atau bisa pinjem di sana?",
+          "created_at": "2025-10-22T09:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Meal prep sehat buat seminggu! Menu simple: ayam panggang, nasi merah, brokoli kukus, dan telur rebus 🍱 Cocok buat yang sibuk tapi tetap pengen clean eating.",
+      "thumbnail": "https://images.unsplash.com/photo-1572441710534-680c9f10d42f?w=800",
+      "category": "nutrition",
+      "post_views": 112,
+      "created_at": "2025-10-22T14:30:00Z",
+      "like_count": 49,
+      "comments": [
+        {
+          "user": "yoga_health",
+          "content": "Wah simple banget! Aku tambahin tahu panggang juga biasanya 😋",
+          "created_at": "2025-10-22T15:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Komunitas HikingTime bakal nanjak bareng ke Gunung Papandayan minggu depan! Rencana start Sabtu pagi, open join buat yang mau healing bareng alam 🏞️",
+      "thumbnail": "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800",
+      "category": "event",
+      "post_views": 176,
+      "created_at": "2025-10-23T07:00:00Z",
+      "like_count": 73,
+      "comments": [
+        {
+          "user": "aldi_active",
+          "content": "Ikut dong! Udah lama nggak camping 🏕️",
+          "created_at": "2025-10-23T07:30:00Z"
+        },
+        {
+          "user": "fit_tania",
+          "content": "Ada briefing sebelum berangkat nggak? Aku pemula nih hehe",
+          "created_at": "2025-10-23T07:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Mulai rutin yoga pagi bikin fokus meningkat banget. Gerakan simple kayak *sun salutation* bisa bantu banget buat energi seharian ✨",
+      "thumbnail": "https://images.unsplash.com/photo-1594737625785-c4b1e5e6f8f5?w=800",
+      "category": "lifestyle",
+      "post_views": 89,
+      "created_at": "2025-10-23T09:00:00Z",
+      "like_count": 45,
+      "comments": [
+        {
+          "user": "rani_fit",
+          "content": "Setuju! Aku malah jadi tidur lebih nyenyak semenjak yoga rutin 🧘‍♀️",
+          "created_at": "2025-10-23T09:20:00Z"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Kalau lagi latihan di gym, fokus dulu ke form ya! Berat bisa nyusul, tapi teknik yang benar bikin progress-nya lebih aman 💪",
+      "thumbnail": "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=800",
+      "category": "tips",
+      "post_views": 107,
+      "created_at": "2025-10-23T12:00:00Z",
+      "like_count": 52,
+      "comments": [
+        {
+          "user": "michael_jog",
+          "content": "Bener banget! Aku dulu pernah salah form malah cedera bahu 😅",
+          "created_at": "2025-10-23T12:15:00Z"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Seru banget ikut fun run bareng komunitas ‘Sehat Bareng’ di BSD! Dapet medali, kaos, dan teman baru juga 🏅",
+      "thumbnail": "https://images.unsplash.com/photo-1599058917212-d750089bc07d?w=800",
+      "category": "event",
+      "post_views": 160,
+      "created_at": "2025-10-23T16:00:00Z",
+      "like_count": 68,
+      "comments": [
+        {
+          "user": "fit_tania",
+          "content": "Aku juga ikut! Capek tapi puas banget 😍",
+          "created_at": "2025-10-23T16:30:00Z"
+        },
+        {
+          "user": "agus.runner",
+          "content": "Next event kapan lagi nih? Pingin join lagi!",
+          "created_at": "2025-10-23T16:45:00Z"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Snack sehat sore ini: Greek yogurt + buah naga + madu 🍓 Simple, segar, dan tinggi protein!",
+      "thumbnail": "https://images.unsplash.com/photo-1625944230945-fb2eec7b1b3d?w=800",
+      "category": "nutrition",
+      "post_views": 78,
+      "created_at": "2025-10-24T10:00:00Z",
+      "like_count": 39,
+      "comments": [
+        {
+          "user": "yoga_health",
+          "content": "Aku tambahin granola biar makin crunchy 😋",
+          "created_at": "2025-10-24T10:15:00Z"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "description": "Ngopi sehat? Bisa banget! Coba *oat milk latte* tanpa gula tambahan ☕️ Pas buat sebelum yoga atau meeting pagi.",
+      "thumbnail": "https://images.unsplash.com/photo-1615485290382-4537d1c1b72d?w=800",
+      "category": "lifestyle",
+      "post_views": 64,
+      "created_at": "2025-10-24T15:30:00Z",
+      "like_count": 33,
+      "comments": [
+        {
+          "user": "fit_tania",
+          "content": "Aku suka banget yang oat milk barista edition, lebih creamy 😍",
+          "created_at": "2025-10-24T15:45:00Z"
+        },
+        {
+          "user": "yoga_health",
+          "content": "Cocok banget buat pengganti kopi susu biasa!",
+          "created_at": "2025-10-24T16:00:00Z"
+        }
+      ]
+    }
+  ]
+  

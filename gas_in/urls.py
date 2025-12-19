@@ -26,10 +26,15 @@ urlpatterns = [
     path('event/', include('apps.eventModule.urls')),
     path('forum/', include('apps.forumModule.urls')),
     path('venue/', include('apps.venueModule.urls')),
-    path('event-maker/', include('apps.eventMakerModule.urls')),
-    path('event/', include('apps.eventModule.urls')),
-    
+    path('event-maker/', include('apps.eventMakerModule.urls')),   
+    path('auth/', include('apps.authentication.urls')), 
 ]
 
-if settings.DEBUG:
+if settings.DEBUG or not settings.PRODUCTION:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    from django.views.static import serve
+    from django.urls import re_path
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
