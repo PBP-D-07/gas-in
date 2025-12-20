@@ -1,7 +1,7 @@
 import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 # from main.forms import ProductForm
-from apps.venueModule.models import Venue
+from apps.venueModule.models import Venue, VenueImage
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.urls import reverse
@@ -13,7 +13,10 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
+import json
+import requests
 
+# menampilkan semua venue
 def show_venue(request):
     venue_list = Venue.objects.all()
 
@@ -23,6 +26,7 @@ def show_venue(request):
 
     return render(request, 'venue.html', context)
 
+# menampilkan detail venue berdasarkan ID
 def venue_detail(request, venue_id):
     venue = get_object_or_404(Venue, pk=venue_id)
 
@@ -31,6 +35,60 @@ def venue_detail(request, venue_id):
     }
 
     return render(request, "venue_detail.html", context)
+
+# mem-post data dari flutter
+@csrf_exempt
+def create_venue_flutter(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = strip_tags(data.get("name", ""))
+            description = strip_tags(data.get("description", ""))
+            location = strip_tags(data.get("location", ""))
+            contact_number = strip_tags(data.get("contact_number", ""))
+            category = data.get("category", "other")
+            thumbnail = data.get("thumbnail", "")
+            owner = request.user if request.user.is_authenticated else None
+            images = data.get("images", [])  # Expecting list of image URLs/paths
+
+            # Validate required fields
+            if not name or not location:
+                return JsonResponse({"status": "error", "message": "Name and location are required"}, status=400)
+
+            # Create venue
+            new_venue = Venue(
+                name=name,
+                description=description,
+                location=location,
+                category=category,
+                thumbnail=thumbnail,
+                contact_number=contact_number,
+                owner=owner,
+            )
+            new_venue.save()
+
+            # Create related images
+            if images and isinstance(images, list):
+                for idx, img_url in enumerate(images):
+                    if img_url:  # Skip empty strings
+                        VenueImage.objects.create(
+                            venue=new_venue,
+                            image=img_url,
+                            order=idx
+                        )
+
+            return JsonResponse({
+                "status": "success",
+                "venue_id": str(new_venue.id),
+                "message": "Venue created successfully"
+            }, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    else:
+        return JsonResponse({"status": "error", "message": "Only POST method allowed"}, status=405)
 
 # mengembalikan data dalam bentuk XML
 def show_xml_venue(request):
@@ -43,7 +101,7 @@ def show_json_venue(request):
     venue_list = Venue.objects.prefetch_related('images').all()
     data = []
     for venue in venue_list:
-        images = [img.image for img in venue.images.all()] #type: ignore
+        images = [img.image for img in venue.images.all()]
         data.append({
             'id': str(venue.id),
             'name': venue.name,
@@ -55,7 +113,7 @@ def show_json_venue(request):
             'owner_username': venue.owner.username if venue.owner else None,
             'category': venue.category,
             'created_at': venue.created_at.isoformat(),
-            'owner_id': venue.owner_id, #type: ignore
+            'owner_id': venue.owner_id,
         })
 
     return JsonResponse(data, safe=False)
@@ -73,7 +131,7 @@ def show_xml_by_id_venue(request, venue_id):
 def show_json_by_id_venue(request, venue_id):
     try:
         venue = Venue.objects.prefetch_related('images').get(pk=venue_id)
-        images = [img.image for img in venue.images.all()] #type: ignore
+        images = [img.image for img in venue.images.all()]
         data = {
             'id': str(venue.id),
             'name': venue.name,
@@ -85,7 +143,7 @@ def show_json_by_id_venue(request, venue_id):
             'owner_username': venue.owner.username if venue.owner else None,
             'category': venue.category,
             'created_at': venue.created_at.isoformat(),
-            'owner_id': venue.owner_id, #type: ignore
+            'owner_id': venue.owner_id,
         }
         return JsonResponse(data)
     except Venue.DoesNotExist:

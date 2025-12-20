@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>gas.in | Discover Events</title>
+{% endblock meta %}
+
+{% block content %}
+<!-- {% include 'toast.html' %} -->
+
+<div class="relative min-h-screen pt-32 pb-20 px-20 max-lg:px-12 flex flex-col gap-10">
+    <!-- Header -->
+    <div class="flex max-md:flex-col justify-between items-start max-md:items-center gap-4">
+        <div class="flex flex-col gap-2">
+            <h2 class="text-3xl max-md:text-2xl max-md:text-center font-bold">
+                Discover Events
+            </h2>
+            <p class="text-gray-500 max-md:text-center">Temukan event olahraga yang sesuai dengan minat Anda</p>
+        </div>
+        <div class="flex gap-3">
+            {% if user.is_authenticated %}
+            <a href="{% url 'eventModule:show_saved_searches' %}" 
+               class="px-5 py-3 max-md:px-4 max-md:py-2 bg-gray-100 text-lg max-md:text-base font-semibold rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+                Saved
+            </a>
+            {% endif %}
+            <a href="{% url 'eventMakerModule:show_create' %}" 
+               class="px-6 py-3 max-md:px-4 max-md:py-2 bg-gray-100 text-xl max-md:text-lg font-semibold rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Create Event
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="w-full p-8 rounded-lg border-2 border-gray-500">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl max-md:text-xl font-semibold">Filter Events</h3>
+            {% if user.is_authenticated %}
+            <button 
+                id="save-search-btn"
+                class="px-5 py-2 bg-blue-500 text-white text-lg font-semibold rounded-lg hover:bg-blue-600 transition">
+                💾 Save Current Filter
+            </button>
+            {% endif %}
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Filter Lokasi -->
+            <div class="flex flex-col gap-1">
+                <label for="location-filter" class="font-semibold text-xl max-md:text-lg">
+                    Lokasi
+                </label>
+                <select id="location-filter" class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg">
+                    <option value="">Semua Lokasi</option>
+                    <option value="Jakarta">Jakarta</option>
+                    <option value="Bogor">Bogor</option>
+                    <option value="Depok">Depok</option>
+                    <option value="Tangerang">Tangerang</option>
+                    <option value="Bekasi">Bekasi</option>
+                </select>
+            </div>
+
+            <!-- Filter Kategori -->
+            <div class="flex flex-col gap-1">
+                <label for="category-filter" class="font-semibold text-xl max-md:text-lg">
+                    Kategori Olahraga
+                </label>
+                <select id="category-filter" class="bg-gray-200 rounded-md py-2 px-2 focus:outline-none text-lg">
+                    <option value="">Semua Kategori</option>
+                    <option value="running">Lari</option>
+                    <option value="badminton">Badminton</option>
+                    <option value="futsal">Futsal</option>
+                    <option value="football">Sepak Bola</option>
+                    <option value="basketball">Basket</option>
+                    <option value="cycling">Sepeda</option>
+                    <option value="volleyball">Voli</option>
+                    <option value="yoga">Yoga</option>
+                    <option value="padel">Padel</option>
+                    <option value="other">Lainnya</option>
+                </select>
+            </div>
+
+            <!-- Tombol Reset -->
+            <div class="flex flex-col gap-1 justify-end">
+                <button id="reset-filter" class="bg-gray-200 rounded-md py-2 px-2 text-lg font-semibold hover:bg-gray-300 transition">
+                    Reset Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Info -->
+        <div id="filter-info" class="mt-4 text-lg text-gray-600"></div>
+    </div>
+
+    <!-- Events Grid -->
+    <div id="events-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Events akan dimuat di sini via JavaScript -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="text-center py-12 hidden">
+        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+        </svg>
+        <h3 class="mt-4 text-xl font-semibold text-gray-900">Tidak ada event</h3>
+        <p class="mt-2 text-lg text-gray-500">Tidak ada event yang sesuai dengan filter Anda.</p>
+    </div>
+</div>
+
+<!-- Save Search Modal -->
+<div id="save-search-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h3 class="text-2xl font-bold mb-4">Save Current Filter</h3>
+        <p class="text-gray-600 mb-4">Give this filter combination a name for quick access later</p>
+        <input 
+            type="text" 
+            id="search-name" 
+            placeholder="e.g., Futsal Jakarta Pagi"
+            class="w-full bg-gray-200 rounded-md py-3 px-4 mb-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex gap-3">
+            <button 
+                id="confirm-save"
+                class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
+                Save
+            </button>
+            <button 
+                id="cancel-save"
+                class="flex-1 bg-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load events saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        loadEvents();
+        
+        // Event listener untuk filter
+        document.getElementById('location-filter').addEventListener('change', loadEvents);
+        document.getElementById('category-filter').addEventListener('change', loadEvents);
+        document.getElementById('reset-filter').addEventListener('click', resetFilters);
+        
+        // Save search functionality
+        const saveBtn = document.getElementById('save-search-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', openSaveModal);
+        }
+        document.getElementById('cancel-save')?.addEventListener('click', closeSaveModal);
+        document.getElementById('confirm-save')?.addEventListener('click', saveSearch);
+    });
+
+    async function loadEvents() {
+        const container = document.getElementById('events-container');
+        const emptyState = document.getElementById('empty-state');
+        const filterInfo = document.getElementById('filter-info');
+        
+        // Clear container
+        container.innerHTML = '<div class="col-span-full text-center py-8"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div><p class="mt-2 text-gray-600 text-lg">Memuat event...</p></div>';
+        emptyState.classList.add('hidden');
+        
+        // Get filter values
+        const location = document.getElementById('location-filter').value;
+        const category = document.getElementById('category-filter').value;
+        
+        // Build query string
+        const params = new URLSearchParams();
+        if (location) params.append('location', location);
+        if (category) params.append('category', category);
+        
+        try {
+            const response = await fetch(`/event/api/events/?${params.toString()}`);
+            const result = await response.json();
+            
+            // Clear loading
+            container.innerHTML = '';
+            
+            // Update filter info
+            updateFilterInfo(result.filters_applied, result.total);
+            
+            if (result.data && result.data.length > 0) {
+                result.data.forEach(event => {
+                    container.appendChild(createEventCard(event));
+                });
+            } else {
+                emptyState.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error loading events:', error);
+            container.innerHTML = '<p class="text-red-500 text-center text-lg col-span-full">Terjadi kesalahan saat memuat event.</p>';
+            showToast('Failed to load events', 'Gagal memuat event', 'error');
+        }
+    }
+
+    function createEventCard(event) {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-lg border-2 border-gray-300 overflow-hidden hover:border-gray-500 hover:shadow-lg transition cursor-pointer';
+        card.onclick = () => window.location.href = `/event-maker/detail/${event.id}/`;
+        
+        const thumbnailUrl = event.thumbnail || 'https://via.placeholder.com/400x200?text=No+Image';
+        
+        card.innerHTML = `
+            <img src="${thumbnailUrl}" alt="${event.name}" class="w-full h-48 object-cover">
+            <div class="p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="px-3 py-1 bg-gray-200 text-gray-800 text-sm font-semibold rounded-full">
+                        ${event.category_display}
+                    </span>
+                    <span class="text-sm text-gray-500 font-medium">
+                        ${event.participants_count} peserta
+                    </span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2 truncate">${event.name}</h3>
+                <p class="text-base text-gray-600 mb-3 line-clamp-2">${event.description}</p>
+                <div class="flex items-center text-base text-gray-500 mb-2">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    ${event.location}
+                </div>
+                <div class="flex items-center text-base text-gray-500">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    ${new Date(event.date).toLocaleDateString('id-ID', { 
+                        day: 'numeric', 
+                        month: 'short', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    function updateFilterInfo(filters, total) {
+        const filterInfo = document.getElementById('filter-info');
+        const appliedFilters = [];
+        
+        if (filters.location) appliedFilters.push(`Lokasi: ${filters.location}`);
+        if (filters.category) appliedFilters.push(`Kategori: ${getCategoryLabel(filters.category)}`);
+        
+        if (appliedFilters.length > 0) {
+            filterInfo.textContent = `Menampilkan ${total} event dengan filter: ${appliedFilters.join(', ')}`;
+        } else {
+            filterInfo.textContent = `Menampilkan ${total} event`;
+        }
+    }
+
+    function getCategoryLabel(value) {
+        const categories = {
+            'running': 'Lari',
+            'badminton': 'Badminton',
+            'futsal': 'Futsal',
+            'football': 'Sepak Bola',
+            'basketball': 'Basket',
+            'cycling': 'Sepeda',
+            'volleyball': 'Voli',
+            'yoga': 'Yoga',
+            'padel': 'Padel',
+            'other': 'Lainnya'
+        };
+        return categories[value] || value;
+    }
+
+    function resetFilters() {
+        document.getElementById('location-filter').value = '';
+        document.getElementById('category-filter').value = '';
+        loadEvents();
+        showToast('Filter Reset', 'Filter telah direset', 'info');
+    }
+
+    // Save search modal functions
+    function openSaveModal() {
+        const location = document.getElementById('location-filter').value;
+        const category = document.getElementById('category-filter').value;
+        
+        if (!location && !category) {
+            showToast('Filter Required', 'Silakan pilih minimal satu filter sebelum menyimpan', 'error');
+            return;
+        }
+        
+        document.getElementById('save-search-modal').classList.remove('hidden');
+        document.getElementById('search-name').focus();
+    }
+
+    function closeSaveModal() {
+        document.getElementById('save-search-modal').classList.add('hidden');
+        document.getElementById('search-name').value = '';
+    }
+
+    async function saveSearch() {
+        const name = document.getElementById('search-name').value.trim();
+        const location = document.getElementById('location-filter').value;
+        const category = document.getElementById('category-filter').value;
+        
+        if (!name) {
+            showToast('Name Required', 'Silakan masukkan nama untuk pencarian ini', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/event/api/saved-search/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    name: name,
+                    location: location || null,
+                    category: category || null
+                })
+            });
+
+            if (response.status === 401) {
+                showToast('Login Required', 'Sesi Anda berakhir, silakan login kembali', 'error');
+                return;
+            }
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                showToast('Success!', 'Pencarian berhasil disimpan', 'success');
+                closeSaveModal();
+            } else {
+                showToast('Error', result.message || 'Gagal menyimpan pencarian', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error', 'Terjadi kesalahan saat menyimpan', 'error');
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock content %}

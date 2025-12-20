@@ -26,7 +26,6 @@ def run():
         owner = User.objects.first()
 
         description_str = (
-
             f"Luas Tanah: {v.get('luas_tanah', 'kosong')} m², "
             f"Luas Bangunan: {v.get('luas_bangunan', 'kosong')} m², "
             f"Luas Keseluruhan: {v.get('luas_keseluruhan', 'kosong')} m². "
