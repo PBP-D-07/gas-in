@@ -41,6 +41,8 @@ SESSION_COOKIE_SAMESITE = 'None'
 
 CSRF_TRUSTED_ORIGINS = [
     "https://nezzaluna-azzahra-gas-in.pbp.cs.ui.ac.id/"
+    'http://localhost:*',
+    'http://127.0.0.1:*',
 ]
 
 # Application definition
