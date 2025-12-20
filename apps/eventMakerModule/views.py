@@ -170,13 +170,15 @@ def edit_event(request, id):
     name = request.POST.get("name", event.name)
     description = request.POST.get("description", event.description)
     date = request.POST.get("date", event.date)
+    date_obj = datetime.strptime(date, "%Y-%m-%dT%H:%M")
+    aware_date = timezone.make_aware(date_obj, timezone.get_current_timezone())
     location = request.POST.get("location", event.location)
     category = request.POST.get("category", event.category)
     thumbnail = request.FILES.get("thumbnail", event.thumbnail)
 
     event.name = name
     event.description = description
-    event.date = date
+    event.date = aware_date
     event.location = location
     event.category = category
     if thumbnail:
