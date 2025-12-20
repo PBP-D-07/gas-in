@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+import requests
 from apps.main.models import User
 from django.forms.models import model_to_dict
 import json
@@ -205,3 +206,21 @@ def get_all_user(request):
     return JsonResponse({
         'data': users
     }, status=200)
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)

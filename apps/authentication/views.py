@@ -69,7 +69,7 @@ def login(request):
             "status": False,
             "message": "Login failed, please check your username or password."
         }, status=401)
-    
+        
 @csrf_exempt
 def logout(request):
     username = request.user.username

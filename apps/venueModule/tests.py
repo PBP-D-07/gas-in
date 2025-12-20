@@ -24,7 +24,7 @@ class VenueModelTests(BaseVenueTestCase):
 			contact_number='0812345678',
 			owner=self.user,
 		)
-		# create images out of order and ensure ordering by 'order' field
+
 		VenueImage.objects.create(venue=v, image='http://example.com/1.jpg', order=2)
 		VenueImage.objects.create(venue=v, image='http://example.com/0.jpg', order=0)
 		VenueImage.objects.create(venue=v, image='http://example.com/2.jpg', order=1)
@@ -39,7 +39,7 @@ class VenueModelTests(BaseVenueTestCase):
 class VenueAPITests(BaseVenueTestCase):
 	def setUp(self):
 		super().setUp()
-		# create a sample venue with images
+
 		self.venue = Venue.objects.create(
 			name='API Venue',
 			description='API Desc',
@@ -57,12 +57,11 @@ class VenueAPITests(BaseVenueTestCase):
 		resp = self.client.get(url, HTTP_ACCEPT='application/json')
 		self.assertEqual(resp.status_code, 200)
 		data = json.loads(resp.content)
-		# should be a list and contain our venue
+
 		self.assertIsInstance(data, list)
 		ids = [d.get('id') for d in data]
 		self.assertIn(str(self.venue.id), ids)
 
-		# find our venue payload and check images key
 		payload = next((d for d in data if d.get('id') == str(self.venue.id)), None)
 		self.assertIsNotNone(payload)
 		self.assertIn('images', payload)
@@ -88,7 +87,7 @@ class VenueViewTemplateTests(BaseVenueTestCase):
 		url = reverse('venue:show_venue')
 		resp = self.client.get(url)
 		self.assertEqual(resp.status_code, 200)
-		# ensure the template contains expected hero title text
+
 		self.assertContains(resp, 'Found The Best Sports Venues', status_code=200)
 
 	def test_venue_detail_page_renders(self):
@@ -121,14 +120,14 @@ class ExtendedVenueTests(BaseVenueTestCase):
 		resp = self.client.get(url, HTTP_ACCEPT='application/json')
 		self.assertEqual(resp.status_code, 200)
 		payload = json.loads(resp.content)
-		# check types
+
 		self.assertIsInstance(payload.get('id'), str)
 		self.assertIsInstance(payload.get('name'), str)
 		self.assertIsInstance(payload.get('images'), list)
-		# created_at must be present and ISO-like
+
 		self.assertIn('created_at', payload)
 		self.assertIsInstance(payload['created_at'], str)
-		# owner_username should match
+
 		self.assertEqual(payload.get('owner_username'), self.user.username)
 
 	def test_images_order_in_json_matches_order_field(self):
@@ -140,7 +139,7 @@ class ExtendedVenueTests(BaseVenueTestCase):
 		resp = self.client.get(url, HTTP_ACCEPT='application/json')
 		payload = json.loads(resp.content)
 		imgs = payload.get('images')
-		# images in JSON should be ordered by order field defined in model Meta
+
 		self.assertEqual(imgs, ['http://ex/0.jpg', 'http://ex/2.jpg', 'http://ex/1.jpg'])
 
 	def test_venue_detail_view_context_has_venue(self):
@@ -148,7 +147,7 @@ class ExtendedVenueTests(BaseVenueTestCase):
 		url = reverse('venue:venue_detail', args=[v.id])
 		resp = self.client.get(url)
 		self.assertEqual(resp.status_code, 200)
-		# the view passes 'venue' in context
+
 		self.assertIn('venue', resp.context)
 		self.assertEqual(resp.context['venue'].id, v.id)
 
