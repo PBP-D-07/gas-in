@@ -44,7 +44,7 @@ def get_filtered_events(request):
                 'location': e.location,
                 'category': e.category,
                 'category_display': e.get_category_display() if hasattr(e, 'get_category_display') else e.category,  # type: ignore
-                'thumbnail': settings.MEDIA_URL + str(e.thumbnail) if e.thumbnail else None,
+                'thumbnail': e.thumbnail.url if e.thumbnail else None,
                 'owner': {
                     'id': str(e.owner.id) if e.owner else None,
                     'username': e.owner.username if e.owner else None,

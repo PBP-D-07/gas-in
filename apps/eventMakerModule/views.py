@@ -103,7 +103,7 @@ def get_event_by_id(request, id):
         }
         for p in event.participants.all()
     ]
-    event_dict['thumbnail'] = settings.MEDIA_URL + str(event.thumbnail) if event.thumbnail else None
+    event_dict['thumbnail'] = event.thumbnail.url if event.thumbnail else None
 
     return JsonResponse({"message": "Event retrieved successfully", "data": event_dict}, status=200)
 
