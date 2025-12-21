@@ -4,6 +4,32 @@ from .models import Event
 from django.views.decorators.csrf import csrf_exempt
 from .decorators import admin_required
 
+@csrf_exempt
+def dashboard_json(request):
+    """API endpoint untuk Flutter"""
+    pending_events = Event.objects.filter(is_accepted=None).order_by('-created_at')
+    approved_events = Event.objects.filter(is_accepted=True).order_by('-created_at')
+    rejected_events = Event.objects.filter(is_accepted=False).order_by('-created_at')
+    
+    def serialize_event(event):
+        return {
+            'id': str(event.id),
+            'name': event.name,
+            'category': event.get_category_display(),
+            'date': event.date.strftime('%d %b %Y, %H:%M'),
+            'location': event.location or 'N/A',
+            # 'username': event.user.username if event.user else 'Unknown',
+        }
+    
+    return JsonResponse({
+        'pending_events': [serialize_event(e) for e in pending_events],
+        'approved_events': [serialize_event(e) for e in approved_events],
+        'rejected_events': [serialize_event(e) for e in rejected_events],
+        'pending_count': pending_events.count(),
+        'approved_count': approved_events.count(),
+        'rejected_count': rejected_events.count(),
+    })
+
 @admin_required
 def dashboard(request):
     # Pisahkan events berdasarkan status
