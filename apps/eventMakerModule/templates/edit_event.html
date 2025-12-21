@@ -204,7 +204,8 @@
 
       const rawDate = data.date;
       const dateObj = new Date(rawDate);
-      const formattedDate = dateObj.toISOString().split("T")[0];
+      const localDate = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000);
+      const formattedDate = localDate.toISOString().slice(0, 16);
 
       document.getElementById("name").value = data.name || "";
       document.getElementById("description").value = data.description || "";
